@@ -1,0 +1,26 @@
+# Node.js 의존성
+node_modules/
+
+# TypeScript 컴파일 결과
+dist/
+build/
+
+# 로그 파일
+*.log
+
+# 환경 변수 파일 (보안)
+.env
+
+# MacOS 시스템 파일
+*.DS_Store
+
+# 테스트 커버리지 결과
+coverage/
+
+# 임시 파일 및 캐시
+tmp/
+temp/
+.cache/
+
+ package-lock.json
+yarn.lock

@@ -1,0 +1,23 @@
+{
+  "name": "autoorder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
+    "fs": "^0.0.1-security",
+    "puppeteer": "^24.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "@types/puppeteer": "^7.0.4",
+    "typescript": "^5.7.3"
+  }
+}
