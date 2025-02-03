@@ -1,9 +1,8 @@
-import puppeteer from "puppeteer";
-import type { Page, Browser } from "puppeteer";
+import type { Page } from "puppeteer";
 // 이미 스크랩한 url 제외하기 위한 저장할 Set
 export const scrapedUrls = new Set<string>();
 
-export async function scrapeNewUrls(page: Page) {
+export async function scrapeNewUrls(page: Page): Promise<string[]> {
   const urls: string[] = await page.evaluate(() => {
     const links = Array.from(document.querySelectorAll("a")); // 링크 수집 (a태그)  // 여기는 수정 필요함
     return links
