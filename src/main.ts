@@ -27,7 +27,7 @@ async function scrapeAndAutoInput() {
       clearInterval(autoInputInterval);
       console.log("종료");
     }
-    const newUrls: string[] = await scrapUrls.scrapeNewUrls(ssPage);
+    const newUrls: string[] = await scrapUrls.ssScrapeNewUrls(ssPage);
     newUrls.forEach(async (url: string) => {}); // 스크랩한 url -> 데이터 추출 -> 엑셀 데이터 추가 -> 데이터 자동 입력 -> 클릭까지
   }, 60 * 1000);
 }
