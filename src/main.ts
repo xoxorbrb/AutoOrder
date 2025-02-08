@@ -129,9 +129,9 @@ async function sessionCheckAndSetLogin(
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) !== null;
 
       if (loginButtonExists) {
-        console.log("로그인 성공");
+        console.log("[플라워 인트라넷] 로그인 성공");
       } else {
-        console.log("로그인 실패");
+        console.log("[플라워 인트라넷] 로그인 실패");
         stopScrapping();
       }
     }
