@@ -38,13 +38,13 @@ export async function ssOrderDataScraper(url: string, browser: Browser) {
         row.querySelectorAll(".table-blue, .table-green")
       );
 
-      const valueTag = Array.from(row.querySelectorAll(".inside")).filter(
-        (el) => !el.closest(".table-blue, .table-green")
-      );
+      const valueTags: HTMLElement[] = Array.from(
+        row.querySelectorAll<HTMLElement>(".inside")
+      ).filter((el) => !el.closest(".table-blue, .table-green"));
 
       keyTags.forEach((keyTag, index) => {
         const keyInsideElement = keyTag.querySelector(".inside");
-        const valueInsideElement = valueTag[index];
+        const valueInsideElement = valueTags[index];
         const key: string = keyInsideElement?.textContent?.trim() || "";
         const value: string = valueInsideElement?.textContent?.trim() || "";
 
@@ -55,5 +55,32 @@ export async function ssOrderDataScraper(url: string, browser: Browser) {
     });
   });
 
-  await page.$$eval(".row-height, .line-t", (row) => {});
+  //리본데이터 추출
+  await page.$$eval(".inside", (insideTags) => {
+    insideTags.forEach((inside) => {
+      const keyTags: HTMLElement[] = Array.from(
+        inside.querySelectorAll(".row-height, line-t")
+      );
+      const valueTags: HTMLElement[] = Array.from(
+        inside.querySelectorAll(".row-height:not(line-t)")
+      );
+
+      keyTags.forEach((keyTag, index) => {
+        const keyInsideElement = keyTag.querySelector(".inside");
+        const valueInsideElement = valueTags[index].querySelector(".inside");
+        const key: string = keyInsideElement?.textContent?.trim() || "";
+        let value: string = valueInsideElement?.textContent?.trim() || "";
+
+        if (value === "") {
+          value =
+            valueInsideElement?.querySelector("span")?.textContent?.trim() ||
+            "";
+        }
+
+        if (Object.values(ssKeyMapping).includes(key)) {
+          ssData[key] = value;
+        }
+      });
+    });
+  });
 }
