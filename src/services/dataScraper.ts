@@ -20,7 +20,10 @@ export interface OrderData {
   userPhone: string;
   address: string;
 }
-export async function ssOrderDataScraper(url: string, browser: Browser) {
+export async function ssOrderDataScraper(
+  url: string,
+  browser: Browser
+): Promise<Object> {
   // 삼신 데이터
   let ssData: { [key: string]: string } = {};
   ssData.url = url;
@@ -83,4 +86,6 @@ export async function ssOrderDataScraper(url: string, browser: Browser) {
       });
     });
   });
+
+  return ssData;
 }
