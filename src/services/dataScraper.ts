@@ -51,8 +51,11 @@ export async function ssOrderDataScraper(
         const key: string = keyInsideElement?.textContent?.trim() || "";
         const value: string = valueInsideElement?.textContent?.trim() || "";
 
-        if (Object.values(ssKeyMapping).includes(key)) {
-          ssData[key] = value;
+        const mappedKey = Object.keys(ssKeyMapping).find(
+          (k: string) => ssKeyMapping[k as keyof typeof ssKeyMapping] === key
+        );
+        if (mappedKey) {
+          ssData[mappedKey] = value;
         }
       });
     });
@@ -88,8 +91,11 @@ export async function ssOrderDataScraper(
             "";
         }
 
-        if (Object.values(ssKeyMapping).includes(key)) {
-          ssData[key] = value;
+        const mappedKey = Object.keys(ssKeyMapping).find(
+          (k: string) => ssKeyMapping[k as keyof typeof ssKeyMapping] === key
+        );
+        if (mappedKey) {
+          ssData[mappedKey] = value;
         }
       });
     });
