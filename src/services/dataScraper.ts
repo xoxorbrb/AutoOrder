@@ -62,11 +62,19 @@ export async function ssOrderDataScraper(
   await page.$$eval(".inside", (insideTags) => {
     insideTags.forEach((inside) => {
       const keyTags: HTMLElement[] = Array.from(
-        inside.querySelectorAll(".row-height, line-t")
-      );
+        inside.querySelectorAll(".row-height, .line-t")
+      ).flatMap((element) => {
+        return Array.from(
+          (element as HTMLElement).querySelectorAll(".table-gray")
+        );
+      });
       const valueTags: HTMLElement[] = Array.from(
         inside.querySelectorAll(".row-height:not(line-t)")
-      );
+      ).flatMap((element) => {
+        return Array.from(
+          (element as HTMLElement).querySelectorAll(".col-height")
+        );
+      });
 
       keyTags.forEach((keyTag, index) => {
         const keyInsideElement = keyTag.querySelector(".inside");
