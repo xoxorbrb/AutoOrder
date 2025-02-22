@@ -46,7 +46,7 @@ async function sessionCheckAndSetLogin(
   key: string = "" // 플라워 인트라넷 key 값
 ) {
   await page.goto(url, {
-    waitUntil: "networkidle2",
+    waitUntil: "load",
   });
 
   if (url === ssUrl) {
@@ -57,7 +57,7 @@ async function sessionCheckAndSetLogin(
       await dialog.dismiss(); // 알럿창 끄기
     });
     if ((alertOn = true)) {
-      await page.reload({ waitUntil: "networkidle2" });
+      await page.reload({ waitUntil: "load" });
 
       const currentUrl = page.url();
 
@@ -80,7 +80,7 @@ async function sessionCheckAndSetLogin(
 
         await Promise.all([
           page.click('input[id="btn-login"]'),
-          page.waitForNavigation({ waitUntil: "networkidle2" }),
+          page.waitForNavigation({ waitUntil: "load" }),
         ]);
 
         let afterUrl = page.url();
@@ -124,7 +124,7 @@ async function sessionCheckAndSetLogin(
 
       await Promise.all([
         page.click('input[alt="로그인버튼"]'),
-        page.waitForNavigation({ waitUntil: "networkidle2" }),
+        page.waitForNavigation({ waitUntil: "load" }),
       ]);
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) !== null;
 
