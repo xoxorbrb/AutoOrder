@@ -14,6 +14,7 @@ const roseKeyMapping = {
   recipientName: "받는고객명",
   telephone: "전화",
   phone: "휴대폰",
+  count: "수량",
   message: "경조사어",
   flowerName: "상품정보",
   senderName: "보내는분",
@@ -119,6 +120,7 @@ export async function roseOrderDataScraper(
     arrive_tel: "휴대폰",
     arrive_htel: "전화",
     ribon: "경조사어",
+    su: "수량",
     good_etc: "상품정보",
     ribon_card: "보내는분",
   };
