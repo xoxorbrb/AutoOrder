@@ -15,24 +15,25 @@ const roseKeyMapping = {
   telephone: "전화",
   phone: "휴대폰",
   message: "경조사어",
+  flowerName: "상품정보",
   senderName: "보내는분",
 };
 
-export interface OrderData {
-  url: string;
-  title: string;
-  compName: string;
-  userName: string;
-  userTel: string;
-  userPhone: string;
-  address: string;
-}
+// export interface OrderData {
+//   url: string;
+//   title: string;
+//   compName: string;
+//   userName: string;
+//   userTel: string;
+//   userPhone: string;
+//   address: string;
+// }
 export async function ssOrderDataScraper(
   url: string,
   browser: Browser
 ): Promise<Object> {
   // 삼신 데이터
-  let ssData: { [key: string]: string } = {};
+  let ssData: { [key: string]: any } = {};
   ssData.url = url;
   // TODO: URL로부터 데이터 수집
   const page: Page = await browser.newPage();
@@ -61,6 +62,7 @@ export async function ssOrderDataScraper(
         const mappedKey = Object.keys(ssKeyMapping).find(
           (k: string) => ssKeyMapping[k as keyof typeof ssKeyMapping] === key
         );
+
         if (mappedKey) {
           ssData[mappedKey] = value;
         }
@@ -71,39 +73,26 @@ export async function ssOrderDataScraper(
   //리본데이터 추출
   await page.$$eval(".inside", (insideTags) => {
     insideTags.forEach((inside) => {
-      const keyTags: HTMLElement[] = Array.from(
-        inside.querySelectorAll(".row-height, .line-t")
-      ).flatMap((element) => {
-        return Array.from(
-          (element as HTMLElement).querySelectorAll(".table-gray")
-        );
-      });
-      const valueTags: HTMLElement[] = Array.from(
-        inside.querySelectorAll(".row-height:not(line-t)")
-      ).flatMap((element) => {
-        return Array.from(
-          (element as HTMLElement).querySelectorAll(".col-height")
-        );
-      });
+      const valueList = Array.from(
+        inside.querySelectorAll(".row-height:not(.line-t)")
+      )
+        .filter((element) =>
+          element.querySelector(
+            ".col-xs-2.col-height.col-middle.line-l.line-r:not(.table-gray)"
+          )
+        )
+        .flatMap((element) =>
+          Array.from(element.querySelectorAll(".col-height"))
+        )
+        .map((el) => el?.textContent?.trim());
 
-      keyTags.forEach((keyTag, index) => {
-        const keyInsideElement = keyTag.querySelector(".inside");
-        const valueInsideElement = valueTags[index].querySelector(".inside");
-        const key: string = keyInsideElement?.textContent?.trim() || "";
-        let value: string = valueInsideElement?.textContent?.trim() || "";
-
-        if (value === "") {
-          value =
-            valueInsideElement?.querySelector("span")?.textContent?.trim() ||
-            "";
-        }
-
-        // 한글명인 키 영어로 매핑
-        const mappedKey = Object.keys(ssKeyMapping).find(
-          (k: string) => ssKeyMapping[k as keyof typeof ssKeyMapping] === key
-        );
-        if (mappedKey) {
-          ssData[mappedKey] = value;
+      valueList.forEach((value, index) => {
+        if (index % 3 === 0) {
+          ssData.flowerName = [...(ssData.flowerName || []), value];
+        } else if (index % 3 === 2) {
+          ssData.rightText = [...(ssData.rightText || []), value];
+        } else if (index % 3 === 1) {
+          ssData.leftText = [...(ssData.leftText || []), value];
         }
       });
     });
@@ -130,6 +119,7 @@ export async function roseOrderDataScraper(
     arrive_tel: "휴대폰",
     arrive_htel: "전화",
     ribon: "경조사어",
+    good_etc: "상품정보",
     ribon_card: "보내는분",
   };
 
