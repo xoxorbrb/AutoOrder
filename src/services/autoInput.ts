@@ -1,23 +1,87 @@
 import type { Page } from "puppeteer";
 
-const roseUrl = "http://16005423.co.kr/admin/menu02.php";
+const url = "http://16005423.co.kr/agent/balju.html#none";
 
 export async function ssSendInput(data: Record<string, any>, page: Page) {
-  await page.goto(roseUrl, { waitUntil: "load" });
+  await page.goto(url, { waitUntil: "load" });
 
   //드롭다운 상품명 선택
-  if (data.flowerName) {
+  let flowerName = data.flowerName[0];
+  let selectFlower = setSelectFlower(flowerName);
+
+  if (selectFlower) {
+    await page.select('select[data-select2-id="ptype"]', selectFlower);
   }
+
+  let count = data.flowerName.size();
+  let selectCount = "";
+
+  if (count < 10) {
+    selectCount = `0${count.toString()}`;
+  }
+
+  //수량
+  await page.select('select[data-select2-id="pcnt"]', selectCount);
+
+  //원청금액, 보낼금액 1원으로 통일
+  await page.type('input[name="poldwon"]', "1");
+  await page.type('input[name="pwon"]', "1");
+
+  //주소
+  await page.type('input[name="raddr"]', data.deliveryAddress);
+
+  //경조사어
+  let leftText = data.leftText
+    .map((val: string, index: number) => `${index + 1}. ${val}`)
+    .join(" ");
+  await page.type('input[name="rgyungjo_1"]', leftText);
+
+  //보내실분 명의
+  let rightText = data.rightText
+    .map((val: string, index: number) => `${index + 1}. ${val}`)
+    .join(" ");
+  await page.type('input[name="rsend_1"]', rightText);
 }
 
 export async function roseSendInput(data: Record<string, any>, page: Page) {
-  await page.goto(roseUrl, { waitUntil: "load" });
+  await page.goto(url, { waitUntil: "load" });
 
   const flowerName = data.flowerName?.split(" ").join("");
-  let selectFlower = "";
+  let selectFlower = setSelectFlower(flowerName);
 
+  if (selectFlower) {
+    await page.select('select[data-select2-id="ptype"]', selectFlower);
+  }
+
+  //수량 10 이하일 경우 0 추가
+  let count = parseInt(data.count, 10);
+  let selectCount = "";
+
+  if (count < 10) {
+    selectCount = `0${count.toString()}`;
+  }
+
+  //수량
+  await page.select('select[data-select2-id="pcnt"]', selectCount);
+
+  //원청금액, 보낼금액 1원으로 통일
+  await page.type('input[name="poldwon"]', "1");
+  await page.type('input[name="pwon"]', "1");
+
+  //주소
+  await page.type('input[name="raddr"]', data.arrivePlace);
+
+  //경조사어
+  await page.type('input[name="rgyungjo_1"]', data.message);
+
+  //보내는분 명의
+  await page.type('input[name="rsend_1"]', data.senderName);
+}
+
+function setSelectFlower(flowerName: string): string {
   //정해져있는 값이 없기 때문에 포함되는 경우로 선택해야함.
   //근조 3단 선택 (근조필수, 고급,4단 없음, 일반,기본일경우)
+  let selectFlower = "";
   if (
     flowerName?.includes("근조") &&
     !flowerName?.includes("고급") &&
@@ -65,7 +129,8 @@ export async function roseSendInput(data: Record<string, any>, page: Page) {
     !flowerName?.includes("4단") &&
     (flowerName?.includes("기본") ||
       flowerName?.includes("일반") ||
-      flowerName?.includes("축하화환3단"))
+      flowerName?.includes("축하화환3단") ||
+      flowerName === "축하화환")
   ) {
     selectFlower = "축하3단";
   }
@@ -89,31 +154,5 @@ export async function roseSendInput(data: Record<string, any>, page: Page) {
     selectFlower = "상품명확인필요";
   }
 
-  if (selectFlower) {
-    await page.select('select[data-select2-id="ptype"]', selectFlower);
-  }
-
-  //수량 10 이하일 경우 0 추가
-  let count = parseInt(data.count, 10);
-  let selectCount = "";
-
-  if (count < 10) {
-    selectCount = `0${count.toString()}`;
-  }
-
-  //수량
-  await page.select('select[data-select2-id="pcnt"]', selectCount);
-
-  //원청금액, 보낼금액 1원으로 통일
-  await page.type('input[name="poldwon"]', "1");
-  await page.type('input[name="pwon"]', "1");
-
-  //주소
-  await page.type('input[name="raddr"]', data.arrivePlace);
-
-  //경조사어
-  await page.type('input[name="rgyungjo_1"]', data.message);
-
-  //보내는분 명의
-  await page.type('input[name="rsend_1"]', data.senderName);
+  return selectFlower;
 }
