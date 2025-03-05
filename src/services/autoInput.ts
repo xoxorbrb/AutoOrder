@@ -24,8 +24,8 @@ export async function ssSendInput(data: Record<string, any>, page: Page) {
   await page.select('select[data-select2-id="pcnt"]', selectCount);
 
   //원청금액, 보낼금액 1원으로 통일
-  await page.type('input[name="poldwon"]', "1");
-  await page.type('input[name="pwon"]', "1");
+  await page.type('input[name="poldwon"]', data.price);
+  await page.type('input[name="pwon"]', data.price);
 
   //주소
   await page.type('input[name="raddr"]', data.deliveryAddress);
@@ -65,8 +65,8 @@ export async function roseSendInput(data: Record<string, any>, page: Page) {
   await page.select('select[data-select2-id="pcnt"]', selectCount);
 
   //원청금액, 보낼금액 1원으로 통일
-  await page.type('input[name="poldwon"]', "1");
-  await page.type('input[name="pwon"]', "1");
+  await page.type('input[name="poldwon"]', data.originPrice);
+  await page.type('input[name="pwon"]', data.gPrice);
 
   //주소
   await page.type('input[name="raddr"]', data.arrivePlace);

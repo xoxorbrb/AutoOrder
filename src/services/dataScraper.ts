@@ -15,6 +15,9 @@ const roseKeyMapping = {
   telephone: "전화",
   phone: "휴대폰",
   count: "수량",
+  arrivePlace: "배달장소",
+  originPrice: "원청금액",
+  gPrice: "결제금액",
   message: "경조사어",
   flowerName: "상품정보",
   senderName: "보내는분",
@@ -70,6 +73,17 @@ export async function ssOrderDataScraper(
       });
     });
   });
+  //금액 확인
+  const priceParent = await page.$(
+    ".col-xs-3.col-height.col-middle.line-l.line-r"
+  );
+
+  if (priceParent) {
+    const priceTag = await priceParent.$(".inside");
+    const price = priceTag?.evaluate((el) => el.textContent?.trim());
+
+    ssData.price = price;
+  }
 
   //리본데이터 추출
   await page.$$eval(".inside", (insideTags) => {
@@ -119,9 +133,12 @@ export async function roseOrderDataScraper(
     arrive_name: "받는고객명",
     arrive_tel: "휴대폰",
     arrive_htel: "전화",
+    origin_price: "원청금액",
+    gprice: "결제금액",
+    arrive_place: "배달장소",
     ribon: "경조사어",
-    su: "수량",
     good_etc: "상품정보",
+    su: "수량",
     ribon_card: "보내는분",
   };
 
