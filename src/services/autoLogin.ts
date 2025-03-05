@@ -142,3 +142,9 @@ export async function sessionCheckAndSetLogin(
   }
   return true;
 }
+
+//로그아웃 만들기
+export async function logoutRNM(page: Page, url: string) {
+  //로그아웃 url
+  page.goto(url, { waitUntil: "load" });
+}
