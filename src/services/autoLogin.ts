@@ -144,7 +144,7 @@ export async function sessionCheckAndSetLogin(
 }
 
 //로그아웃 만들기
-export async function logoutRNM(page: Page, url: string) {
+export async function logoutRNM(page: Page) {
   //로그아웃 url
-  page.goto(url, { waitUntil: "load" });
+  page.goto("http://16005423.co.kr/agent/logout.php", { waitUntil: "load" });
 }
