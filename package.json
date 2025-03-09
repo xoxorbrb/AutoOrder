@@ -1,23 +1,60 @@
 {
-  "name": "autoorder",
+  "name": "auto-order",
+  "productName": "Auto Order",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "build/electron/electron.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build && tsc",
+    "electron": "electron .",
+    "start": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && npm run electron\"",
+    "dist": "npm run build && electron-builder"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/react": "^18.2.0",
     "dotenv": "^16.4.7",
     "exceljs": "^4.4.0",
     "fs": "^0.0.1-security",
-    "puppeteer": "^24.1.1",
-    "puppeteer-core": "^24.1.1"
+    "puppeteer": "^24.4.0",
+    "puppeteer-core": "^24.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@types/electron": "^1.6.12",
     "@types/node": "^22.12.0",
-    "typescript": "^5.7.3"
+    "@types/puppeteer": "^5.4.7",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
+    "react-scripts": "^5.0.1",
+    "typescript": "^4.9.5",
+    "wait-on": "^8.0.2"
+  },
+  "build": {
+    "appId": "com.autoorder.app",
+    "productName": "AutoOrder",
+    "copyright": "Copyright © 2025",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "public/icon.icns"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.ico"
+    }
   }
 }
