@@ -4,9 +4,234 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AutoOrder</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+      }
+      .form-container,
+      .progress-container {
+        display: none; /* 기본적으로 숨김 */
+        flex-direction: column;
+        align-items: center;
+      }
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin: 10px 0;
+        width: 300px;
+      }
+      .input-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .input-row {
+        display: flex;
+        gap: 10px;
+      }
+      .input-row input {
+        width: 140px;
+        padding: 8px;
+        font-size: 14px;
+      }
+      .date-time-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 300px;
+        margin-top: 10px;
+      }
+      .date-time-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .date-input,
+      .time-input {
+        width: 100%;
+        padding: 8px;
+        font-size: 14px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 15px;
+      }
+      .progress-container h1 {
+        margin-bottom: 20px;
+      }
+      .loader {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      /* 터미널 스타일 콘솔 */
+      .console-output {
+        width: 80%;
+        height: 200px;
+        background-color: black;
+        color: limegreen;
+        padding: 10px;
+        overflow-y: auto;
+        font-family: monospace;
+        text-align: left;
+        border-radius: 5px;
+        margin-top: 20px;
+        white-space: pre-wrap;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- 첫 번째 페이지: 입력 폼 -->
+    <div class="form-container" id="formPage">
+      <h1>AutoOrder 입력</h1>
+
+      <div class="input-group">
+        <label>삼신상사</label>
+        <div class="input-row">
+          <input type="text" id="ssId" placeholder="아이디" />
+          <input type="password" id="ssPw" placeholder="비밀번호" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>1644</label>
+        <div class="input-row">
+          <input type="text" id="roseId" placeholder="아이디" />
+          <input type="password" id="rosePw" placeholder="비밀번호" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>삼신상사 발주 아이디(RNM)</label>
+        <div class="input-row">
+          <input type="text" id="ssRnmId" placeholder="아이디" />
+          <input type="password" id="ssRnmPw" placeholder="비밀번호" />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>1644 발주 아이디(RNM)</label>
+        <div class="input-row">
+          <input type="text" id="roseRnmId" placeholder="아이디" />
+          <input type="password" id="roseRnmPw" placeholder="비밀번호" />
+        </div>
+      </div>
+      <div class="date-time-group">
+        <label>날짜 선택</label>
+        <input type="date" id="dateInput" class="date-input" />
+      </div>
+
+      <div class="date-time-group">
+        <label>시간 선택</label>
+        <input type="time" id="timeInput" class="time-input" />
+      </div>
+
+      <button id="submitButton">확인</button>
+    </div>
+
+    <!-- 두 번째 페이지: 진행 중 화면 -->
+    <div class="progress-container" id="progressPage">
+      <h1>진행 중...</h1>
+      <div class="loader"></div>
+      <button id="exitButton">종료</button>
+
+      <!-- 터미널 스타일 로그 출력 -->
+      <div class="console-output" id="consoleOutput"></div>
+    </div>
+
+    <script>
+      // 페이지 요소 가져오기
+      const formPage = document.getElementById("formPage");
+      const progressPage = document.getElementById("progressPage");
+      const consoleOutput = document.getElementById("consoleOutput");
+
+      // 페이지 초기화: 입력 폼 표시
+      formPage.style.display = "flex";
+
+      document.getElementById("submitButton").addEventListener("click", () => {
+        const data = {
+          ss: {
+            id: document.getElementById("ssId").value,
+            pw: document.getElementById("ssPw").value,
+          },
+          rose: {
+            id: document.getElementById("roseId").value,
+            pw: document.getElementById("rosePw").value,
+          },
+          ssRnm: {
+            id: document.getElementById("ssRnmId").value,
+            pw: document.getElementById("ssRnmPw").value,
+          },
+          roseRnm: {
+            id: document.getElementById("roseRnmId").value,
+            pw: document.getElementById("roseRnmPw").value,
+          },
+
+          date: document.getElementById("dateInput").value,
+          time: document.getElementById("timeInput").value,
+        };
+
+        logMessage("입력된 데이터:", data);
+        logMessage("데이터 입력 완료, 처리 시작...");
+
+        // 첫 번째 페이지 숨기고 진행 중 페이지 표시
+        formPage.style.display = "none";
+        progressPage.style.display = "flex";
+
+        // Electron과 연결하여 데이터 전송
+        if (window.electronAPI) {
+          window.electronAPI.sendFormData(data);
+        }
+
+        // 테스트용: 3초마다 로그 추가
+        let count = 1;
+        const interval = setInterval(() => {
+          logMessage(`처리 단계 ${count}: 작업 진행 중...`);
+          count++;
+          if (count > 5) {
+            clearInterval(interval);
+            logMessage("✅ 처리 완료!");
+          }
+        }, 3000);
+      });
+
+      document.getElementById("exitButton").addEventListener("click", () => {
+        if (window.electronAPI) {
+          window.electronAPI.exitApp(); // Electron 앱 종료 요청
+        } else {
+          alert("종료 기능은 Electron 환경에서만 동작합니다.");
+        }
+      });
+
+      // 로그 출력 함수
+      function logMessage(message) {
+        const logEntry = document.createElement("div");
+        logEntry.textContent = `> ${message}`;
+        consoleOutput.appendChild(logEntry);
+        consoleOutput.scrollTop = consoleOutput.scrollHeight; // 자동 스크롤
+      }
+
+      // Electron에서 메시지를 받아 UI에 표시
+      if (window.electronAPI) {
+        window.electronAPI.logMessage((message) => {
+          logMessage(message);
+        });
+      }
+    </script>
   </body>
 </html>
