@@ -2,8 +2,19 @@ import type { Page } from "puppeteer";
 // 이미 스크랩한 url 제외하기 위한 저장할 Set
 export const ssScrapedUrls = new Set<string>();
 export const roseScrapedUrls = new Set<string>();
-export async function ssScrapeNewUrls(page: Page): Promise<string[]> {
+export async function ssScrapeNewUrls(
+  page: Page,
+  date: string
+): Promise<string[]> {
+  const inputDate = parseCustomDateTime(date);
   //삼신상사
+  const dates: string[] = await page.$$eval(
+    "div[style=color: rgb(254, 71, 71)]",
+    (divs) => {
+      return divs.map((div) => div.textContent || "");
+    }
+  );
+
   const urls: string[] =
     (await page.$$eval(
       "a",
@@ -70,4 +81,15 @@ export async function roseScrapedNewUrls(page: Page): Promise<string[]> {
     console.log(`[플라워 인트라넷] 새로운 URL 없음`);
     return [];
   }
+}
+
+function parseCustomDateTime(dateTimeStr) {
+  const [datePart, timePart] = dateTimeStr.split(" ");
+  const [year, month, day] = datePart.split(".").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+
+  // 연도를 2000년대 기준으로 변환 (예: "25" → 2025년)
+  const fullYear = year < 100 ? 2000 + year : year;
+
+  return new Date(fullYear, month - 1, day, hour, minute);
 }
