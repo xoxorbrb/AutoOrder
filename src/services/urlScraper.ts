@@ -79,6 +79,32 @@ export async function roseScrapedNewUrls(
   let urls: string[] = [];
   const inputDate = parseCustomDateTime(date);
 
+  await page.$$eval(
+    "tr",
+    (rows, baseUrl) => {
+      rows.filter((row) => {
+        const tds = row.querySelectorAll("td");
+        const linkElement = tds[0]?.querySelector("a"); // 첫 번째 td에서 a 태그 찾기 (url)
+        const dateText =
+          tds[1]?.querySelector("div")?.textContent?.trim() || ""; // 두 번째 td의 첫 div 찾기 (시간)
+
+        if (linkElement && dateText) {
+          const rowDate = parseCustomDateTime(dateText);
+
+          if (rowDate > inputDate) {
+            // urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
+            const link: string =
+              linkElement
+                .getAttribute("onclick")
+                ?.match(/window\.open\(['"]([^'"]+)['"]/)?.[1] || "";
+            const href: string = baseUrl + link;
+            urls.push(href);
+          }
+        }
+      });
+    },
+    "http://16441644.roseweb.co.kr"
+  );
   // await page.$$eval(
   //   "a",
   //   (anchors, baseUrl) => {
