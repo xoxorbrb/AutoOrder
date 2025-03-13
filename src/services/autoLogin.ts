@@ -28,7 +28,9 @@ export async function sessionCheckAndSetLogin(
       const currentUrl = page.url();
 
       if (currentUrl.includes("/login")) {
-        console.log("[삼신상사] 로그인되지 않은 상태, 로그인 필요");
+        window.electronAPI.logMessage(
+          "[삼신상사] 로그인되지 않은 상태, 로그인 필요"
+        );
         await page.evaluate(() => {
           const idField = document.querySelector(
             'input[name="member_id"]'
@@ -52,14 +54,14 @@ export async function sessionCheckAndSetLogin(
         let afterUrl = page.url();
 
         if (!afterUrl.includes("/login")) {
-          console.log("[삼신상사] 로그인 성공");
+          window.electronAPI.logMessage("[삼신상사] 로그인 성공");
           return true;
         } else {
-          console.log("[삼신상사] 로그인 실패");
+          window.electronAPI.logMessage("[삼신상사] 로그인 실패");
           return false;
         }
       } else {
-        console.log("[삼신상사]로그인 되어있음");
+        window.electronAPI.logMessage("[삼신상사]로그인 되어있음");
         return true;
       }
     }
@@ -67,7 +69,7 @@ export async function sessionCheckAndSetLogin(
     let loginButtonExists = (await page.$('input[alt="로그인버튼"]')) !== null;
 
     if (loginButtonExists) {
-      console.log("[플라워 인트라넷] 로그인 되지 않은 상태");
+      window.electronAPI.logMessage("[플라워 인트라넷] 로그인 되지 않은 상태");
 
       await page.evaluate(() => {
         const idField = document.querySelector(
@@ -97,10 +99,10 @@ export async function sessionCheckAndSetLogin(
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) === null;
 
       if (loginButtonExists) {
-        console.log("[플라워 인트라넷] 로그인 성공");
+        window.electronAPI.logMessage("[플라워 인트라넷] 로그인 성공");
         return true;
       } else {
-        console.log("[플라워 인트라넷] 로그인 실패");
+        window.electronAPI.logMessage("[플라워 인트라넷] 로그인 실패");
         return false;
       }
     }
@@ -109,7 +111,7 @@ export async function sessionCheckAndSetLogin(
       (await page.$("button.btn.btn-primary.btn-block.btn-flat")) !== null;
 
     if (loginButtonExists) {
-      console.log("[RNM] 로그인 되어있지 않음");
+      window.electronAPI.logMessage("[RNM] 로그인 되어있지 않음");
 
       await page.evaluate(() => {
         const idField = document.querySelector(
@@ -132,10 +134,10 @@ export async function sessionCheckAndSetLogin(
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) === null;
 
       if (loginButtonExists) {
-        console.log("[RNM] 로그인 성공");
+        window.electronAPI.logMessage("[RNM] 로그인 성공");
         return true;
       } else {
-        console.log("[RNM] 로그인 실패");
+        window.electronAPI.logMessage("[RNM] 로그인 실패");
         return false;
       }
     }

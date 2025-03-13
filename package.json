@@ -2,13 +2,13 @@
   "name": "auto-order",
   "productName": "Auto Order",
   "version": "1.0.0",
-  "main": "build/electron/electron.js",
+  "main": "dist/electron.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build && tsc",
     "electron": "electron .",
     "start": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && npm run electron\"",
-    "dist": "npm run build && electron-builder"
+    "dist": "electron-builder"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +38,7 @@
     "wait-on": "^8.0.2"
   },
   "build": {
+    "extends": null,
     "appId": "com.autoorder.app",
     "productName": "AutoOrder",
     "copyright": "Copyright © 2025",
@@ -46,7 +47,6 @@
     },
     "files": [
       "dist/**/*",
-      "electron/**/*",
       "package.json"
     ],
     "mac": {

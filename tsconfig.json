@@ -8,8 +8,8 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "outDir": "build"
+    "outDir": "./dist"
   },
-  "include": ["electron/**/*"],
+  "include": ["src/**/*", "renderer.ts", "preload.ts", "electron.ts"],
   "exclude": ["node_modules", "dist"]
 }

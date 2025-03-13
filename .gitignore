@@ -25,3 +25,5 @@ temp/
  package-lock.json
 yarn.lock
 *.js
+
+release/

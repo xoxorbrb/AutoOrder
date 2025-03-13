@@ -1,6 +1,6 @@
 import type { Page } from "puppeteer";
 
-const url = "http://16005423.co.kr/agent/balju.html#none";
+const url = "http://16005423.co.kr/agent/balju.html";
 
 export async function ssSendInput(data: Record<string, any>, page: Page) {
   await page.goto(url, { waitUntil: "load" });

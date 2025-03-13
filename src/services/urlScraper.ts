@@ -60,14 +60,16 @@ export async function ssScrapeNewUrls(
   const newUrls = urls.filter((url) => !ssScrapedUrls.has(url)) as string[]; // 이전에 데이터를 얻어온 url을 제외한 url가져오기
 
   if (newUrls.length > 0) {
-    console.log(`[삼신상사] 새로운 URL 발견 ${newUrls.length}개`);
+    window.electronAPI.logMessage(
+      `[삼신상사] 새로운 URL 발견 ${newUrls.length}개`
+    );
     newUrls.forEach((url) => {
       ssScrapedUrls.add(url);
-      console.log(`[삼신상사] URL 저장: ${url}`);
+      window.electronAPI.logMessage(`[삼신상사] URL 저장: ${url}`);
     });
     return newUrls;
   } else {
-    console.log("[삼신상사] 새로운 url 없음");
+    window.electronAPI.logMessage("[삼신상사] 새로운 url 없음");
     return [];
   }
 }
@@ -128,19 +130,21 @@ export async function roseScrapedNewUrls(
   const newUrls = urls.filter((url) => !roseScrapedUrls.has(url)) as string[];
 
   if (newUrls && newUrls.length > 0) {
-    console.log(`[플라워 인트라넷] 새로운 URL 발견: ${newUrls.length}개`);
+    window.electronAPI.logMessage(
+      `[플라워 인트라넷] 새로운 URL 발견: ${newUrls.length}개`
+    );
     newUrls.forEach((url) => {
       roseScrapedUrls.add(url);
-      console.log(`[플라워 인트라넷] URL 저장: ${url}`);
+      window.electronAPI.logMessage(`[플라워 인트라넷] URL 저장: ${url}`);
     });
     return newUrls;
   } else {
-    console.log(`[플라워 인트라넷] 새로운 URL 없음`);
+    window.electronAPI.logMessage(`[플라워 인트라넷] 새로운 URL 없음`);
     return [];
   }
 }
 
-function parseCustomDateTime(dateTimeStr) {
+function parseCustomDateTime(dateTimeStr: string) {
   const [datePart, timePart] = dateTimeStr.split(" ");
   const [year, month, day] = datePart.split(".").map(Number);
   const [hour, minute] = timePart.split(":").map(Number);
