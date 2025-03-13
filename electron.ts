@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
+import { scrapeAndAutoInput, stopScrapping } from "./src/autoMain";
 
 let mainWindow: BrowserWindow | null;
 
@@ -9,8 +10,8 @@ app.whenReady().then(() => {
     height: 600,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      nodeIntegration: true,
-      contextIsolation: false,
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   });
 
@@ -29,4 +30,12 @@ ipcMain.on("log-message", (message) => {
 
 ipcMain.on("exit-app", () => {
   app.quit();
+});
+
+ipcMain.on("scrape-and-auto-input", (_, data) => {
+  scrapeAndAutoInput(data);
+});
+
+ipcMain.on("stop-scrapping", () => {
+  stopScrapping();
 });

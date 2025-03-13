@@ -14,6 +14,7 @@ let ssId = "";
 let ssPw = "";
 let roseId = "";
 let rosePw = "";
+let roseKey = "";
 let ssRnmId = "";
 let ssRnmPw = "";
 let roseRnmId = "";
@@ -31,6 +32,7 @@ export async function scrapeAndAutoInput(data: any) {
   ssPw = data.ss.pw;
   roseId = data.rose.id;
   rosePw = data.rose.pw;
+  roseKey = data.rose.key;
   ssRnmId = data.ssRnm.id;
   ssRnmPw = data.ssRnm.pw;
   roseRnmId = data.roseRnm.id;
@@ -90,8 +92,9 @@ export async function scrapeAndAutoInput(data: any) {
     await autoLogin.sessionCheckAndSetLogin(
       rnmPage,
       rnmBasicUrl,
-      roseRnmId,
-      roseRnmPw
+      roseId,
+      rosePw,
+      roseKey
     );
 
     for (const roseUrl of roseNewUrls) {
