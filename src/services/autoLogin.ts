@@ -1,5 +1,5 @@
 import type { Page } from "puppeteer";
-
+import { sendToLog } from "../autoMain";
 const ssUrl: string = "https://samsincall.com/partners/orders/"; //삼신상사
 const roseUrl: string = "http://16441644.roseweb.co.kr/index.htm"; // 플라워 인트라넷
 const rnmUrl: string = "http://16005423.co.kr/agent/"; // rnm 발주페이지
@@ -11,40 +11,53 @@ export async function sessionCheckAndSetLogin(
   password: string,
   key: string = "" // 플라워 인트라넷 key 값
 ): Promise<Boolean> {
-  await page.goto(url, {
-    waitUntil: "load",
-  });
+  sendToLog("접근");
+
+  sendToLog("ㄱㄱㄱㄱ");
 
   if (url === ssUrl) {
+    sendToLog("url: " + url);
+    sendToLog("[삼신상사] url 접근");
     // 알림 감지
     let alertOn: Boolean = false;
+
     page.on("dialog", async (dialog) => {
+      sendToLog("알림 감지");
       alertOn = true;
       await dialog.dismiss(); // 알럿창 끄기
     });
+    await page.goto(url, {
+      waitUntil: "domcontentloaded",
+    });
     if ((alertOn = true)) {
-      await page.reload({ waitUntil: "load" });
+      sendToLog("알림 감지11");
+      await page.reload({ waitUntil: "networkidle2" });
 
       const currentUrl = page.url();
 
       if (currentUrl.includes("/login")) {
-        window.electronAPI.logMessage(
-          "[삼신상사] 로그인되지 않은 상태, 로그인 필요"
-        );
-        await page.evaluate(() => {
-          const idField = document.querySelector(
-            'input[name="member_id"]'
-          ) as HTMLInputElement;
-          const pwField = document.querySelector(
-            'input[name="member_pw"]'
-          ) as HTMLInputElement;
-          idField.value = ""; //아이디 입력 필드 초기화 (중복방지)
-          pwField.value = ""; //패스워드 입력 필드 초기화  (중복방지)
-        });
+        sendToLog("[삼신상사] 로그인되지 않은 상태, 로그인 필요");
+        console.log("현재URL: " + page.url());
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        // 로그인 정보 입력
-        await page.type('input[name="member_id"]', id);
-        await page.type('input[name="member_pw"]', password);
+        await page.waitForSelector('input[name="member_id"]'); // visible 빼고
+        await page.waitForSelector('input[name="member_pw"]');
+        await page.focus('input[name="member_id"]');
+        await page.type('input[name="member_id"]', id, { delay: 50 });
+
+        await page.focus('input[name="member_pw"]');
+        await page.type('input[name="member_pw"]', password, { delay: 50 });
+        // await page.evaluate(() => {
+        //   const idField = document.querySelector(
+        //     'input[name="member_id"]'
+        //   ) as HTMLInputElement;
+        //   const pwField = document.querySelector(
+        //     'input[name="member_pw"]'
+        //   ) as HTMLInputElement;
+
+        //   if (idField) idField.value = ""; //아이디 입력 필드 초기화  (중복방지)
+        //   if (pwField) pwField.value = ""; //패스워드 입력 필드 초기화  (중복방지)
+        // });
 
         await Promise.all([
           page.click('input[id="btn-login"]'),
@@ -54,22 +67,25 @@ export async function sessionCheckAndSetLogin(
         let afterUrl = page.url();
 
         if (!afterUrl.includes("/login")) {
-          window.electronAPI.logMessage("[삼신상사] 로그인 성공");
+          sendToLog("[삼신상사] 로그인 성공");
           return true;
         } else {
-          window.electronAPI.logMessage("[삼신상사] 로그인 실패");
+          sendToLog("[삼신상사] 로그인 실패");
           return false;
         }
       } else {
-        window.electronAPI.logMessage("[삼신상사]로그인 되어있음");
+        sendToLog("[삼신상사]로그인 되어있음");
         return true;
       }
     }
   } else if (url === roseUrl) {
+    await page.goto(url, {
+      waitUntil: "domcontentloaded",
+    });
     let loginButtonExists = (await page.$('input[alt="로그인버튼"]')) !== null;
 
     if (loginButtonExists) {
-      window.electronAPI.logMessage("[플라워 인트라넷] 로그인 되지 않은 상태");
+      sendToLog("[플라워 인트라넷] 로그인 되지 않은 상태");
 
       await page.evaluate(() => {
         const idField = document.querySelector(
@@ -88,8 +104,11 @@ export async function sessionCheckAndSetLogin(
         keyField.value = "";
       });
       // 로그인 정보 입력
+      await page.waitForSelector('input[name="sid"]', { visible: true });
       await page.type('input[name="sid"]', id);
+      await page.waitForSelector('input[name="spw"]', { visible: true });
       await page.type('input[name="spw"]', password);
+      await page.waitForSelector('input[name="skey"]', { visible: true });
       await page.type('input[name="skey"]', key);
 
       await Promise.all([
@@ -99,19 +118,22 @@ export async function sessionCheckAndSetLogin(
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) === null;
 
       if (loginButtonExists) {
-        window.electronAPI.logMessage("[플라워 인트라넷] 로그인 성공");
+        sendToLog("[플라워 인트라넷] 로그인 성공");
         return true;
       } else {
-        window.electronAPI.logMessage("[플라워 인트라넷] 로그인 실패");
+        sendToLog("[플라워 인트라넷] 로그인 실패");
         return false;
       }
     }
   } else if (url === rnmUrl) {
+    await page.goto(url, {
+      waitUntil: "domcontentloaded",
+    });
     let loginButtonExists =
       (await page.$("button.btn.btn-primary.btn-block.btn-flat")) !== null;
 
     if (loginButtonExists) {
-      window.electronAPI.logMessage("[RNM] 로그인 되어있지 않음");
+      sendToLog("[RNM] 로그인 되어있지 않음");
 
       await page.evaluate(() => {
         const idField = document.querySelector(
@@ -134,10 +156,10 @@ export async function sessionCheckAndSetLogin(
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) === null;
 
       if (loginButtonExists) {
-        window.electronAPI.logMessage("[RNM] 로그인 성공");
+        sendToLog("[RNM] 로그인 성공");
         return true;
       } else {
-        window.electronAPI.logMessage("[RNM] 로그인 실패");
+        sendToLog("[RNM] 로그인 실패");
         return false;
       }
     }

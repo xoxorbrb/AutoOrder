@@ -1,6 +1,5 @@
 import puppeteer, { Browser, Page } from "puppeteer";
 import { BrowserWindow } from "electron";
-import { ipcMain } from "electron";
 import * as scrapUrls from "./services/urlScraper";
 import * as scrapData from "./services/dataScraper";
 import * as autoLogin from "./services/autoLogin";
@@ -22,33 +21,30 @@ let ssRnmPw = "";
 let roseRnmId = "";
 let roseRnmPw = "";
 let date = "";
+
+let mainWindow: BrowserWindow;
 export async function scrapeAndAutoInput(data: any) {
   console.log("🚀 autoMain.ts 실행됨!", data);
-  ipcMain.emit("log-message", `📩 스크래핑 시작: ${JSON.stringify(data)}`);
-
   const mainWindow = BrowserWindow.getAllWindows()[0];
 
-  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
-  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
-  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
-  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
-  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
-  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
   const ssBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   }); //samsin 브라우저
   const ssPage: Page = await ssBrowser.newPage();
+  await ssPage.setViewport({ width: 1280, height: 800 });
   const roseBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   }); //1644 브라우저
   const rosePage: Page = await roseBrowser.newPage();
+  await rosePage.setViewport({ width: 1280, height: 800 });
   const rnmBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const rnmPage: Page = await rnmBrowser.newPage();
+  await rnmPage.setViewport({ width: 1280, height: 800 });
 
   ssId = data.ss.id;
   ssPw = data.ss.pw;
@@ -61,17 +57,18 @@ export async function scrapeAndAutoInput(data: any) {
   roseRnmPw = data.roseRnm.pw;
   date = data.date + " " + data.time;
 
-  const autoInputInterval = setInterval(async () => {
+  const run = async () => {
+    let now = new Date();
+    const mainWindow = BrowserWindow.getAllWindows()[0];
+    setMainWindow(mainWindow);
+
+    sendToLog(now.toString() + " 로직 실행");
     let isLogin = await autoLogin.sessionCheckAndSetLogin(
       ssPage,
       ssBasicUrl,
       ssId,
       ssPw
     ); // 필요 시 로그아웃 이벤트 잡아서 바로 중지하는 거 개발 필요, 현재로서는 딱히 세션 끊는게 보이지 않아서 1분에 한번씩 체크하도록 되어있음
-    if (isRunning || isLogin) {
-      clearInterval(autoInputInterval);
-      window.electronAPI.logMessage("종료");
-    }
 
     await ssPage.reload({ waitUntil: "load" });
 
@@ -123,15 +120,22 @@ export async function scrapeAndAutoInput(data: any) {
     }
     await autoLogin.logoutRNM(rnmPage);
 
-    window.electronAPI.logMessage("완료 후 기다리는중 . . .");
-  }, 60 * 1000);
+    sendToLog("완료 후 기다리는중 . . .");
+  };
+
+  await run();
+
+  const interval = setInterval(run, 60000);
 }
 
 export function stopScrapping() {
   isRunning = false;
-  window.electronAPI.logMessage("스크랩 중지");
+  sendToLog("스크랩 중지");
 }
 
-function sendToLog(mainWindow: BrowserWindow, message: string) {
-  mainWindow?.webContents.send("log-message", JSON.stringify(message));
+export function sendToLog(message: string) {
+  mainWindow?.webContents.send("log-message", message);
+}
+export function setMainWindow(window: BrowserWindow) {
+  mainWindow = window;
 }
