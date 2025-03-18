@@ -1,4 +1,6 @@
 import puppeteer, { Browser, Page } from "puppeteer";
+import { BrowserWindow } from "electron";
+import { ipcMain } from "electron";
 import * as scrapUrls from "./services/urlScraper";
 import * as scrapData from "./services/dataScraper";
 import * as autoLogin from "./services/autoLogin";
@@ -21,11 +23,31 @@ let roseRnmId = "";
 let roseRnmPw = "";
 let date = "";
 export async function scrapeAndAutoInput(data: any) {
-  const ssBrowser: Browser = await puppeteer.launch(); //samsin 브라우저
+  console.log("🚀 autoMain.ts 실행됨!", data);
+  ipcMain.emit("log-message", `📩 스크래핑 시작: ${JSON.stringify(data)}`);
+
+  const mainWindow = BrowserWindow.getAllWindows()[0];
+
+  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
+  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
+  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
+  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
+  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
+  sendToLog(mainWindow, "이제 시작이다 임마 !!!");
+  const ssBrowser: Browser = await puppeteer.launch({
+    headless: false, // GUI 실행 (숨김 모드: true)
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  }); //samsin 브라우저
   const ssPage: Page = await ssBrowser.newPage();
-  const roseBrowser: Browser = await puppeteer.launch(); //1644 브라우저
+  const roseBrowser: Browser = await puppeteer.launch({
+    headless: false, // GUI 실행 (숨김 모드: true)
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  }); //1644 브라우저
   const rosePage: Page = await roseBrowser.newPage();
-  const rnmBrowser: Browser = await puppeteer.launch();
+  const rnmBrowser: Browser = await puppeteer.launch({
+    headless: false, // GUI 실행 (숨김 모드: true)
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
   const rnmPage: Page = await rnmBrowser.newPage();
 
   ssId = data.ss.id;
@@ -38,8 +60,6 @@ export async function scrapeAndAutoInput(data: any) {
   roseRnmId = data.roseRnm.id;
   roseRnmPw = data.roseRnm.pw;
   date = data.date + " " + data.time;
-
-  window.electronAPI.logMessage("입력 데이터: " + data);
 
   const autoInputInterval = setInterval(async () => {
     let isLogin = await autoLogin.sessionCheckAndSetLogin(
@@ -110,4 +130,8 @@ export async function scrapeAndAutoInput(data: any) {
 export function stopScrapping() {
   isRunning = false;
   window.electronAPI.logMessage("스크랩 중지");
+}
+
+function sendToLog(mainWindow: BrowserWindow, message: string) {
+  mainWindow?.webContents.send("log-message", JSON.stringify(message));
 }

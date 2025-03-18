@@ -8,6 +8,9 @@ declare global {
       logMessage: (message: string) => void;
       scrapeAndAutoInput: (data: any) => Promise<void>;
       stopScrapping: () => void;
+      receiveLogMessage: (
+        callback: (event: any, message: string) => void
+      ) => void;
     };
   }
 }

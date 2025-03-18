@@ -24,7 +24,7 @@ app.whenReady().then(() => {
   });
 });
 
-ipcMain.on("log-message", (message) => {
+ipcMain.on("log-message", (_, message) => {
   mainWindow?.webContents.send("log-message", message); // ✅ 렌더러 UI에 전달
 });
 
@@ -33,6 +33,7 @@ ipcMain.on("exit-app", () => {
 });
 
 ipcMain.on("scrape-and-auto-input", (_, data) => {
+  console.log("✅ Preload에서 로그:", data);
   scrapeAndAutoInput(data);
 });
 
