@@ -3,6 +3,7 @@ import { sendToLog } from "../autoMain";
 const ssUrl: string = "https://samsincall.com/partners/orders/"; //삼신상사
 const roseUrl: string = "http://16441644.roseweb.co.kr/index.htm"; // 플라워 인트라넷
 const rnmUrl: string = "http://16005423.co.kr/agent/"; // rnm 발주페이지
+
 // 로그인 상태 확인 및 로그인 자동화
 export async function sessionCheckAndSetLogin(
   page: Page,
@@ -11,10 +12,6 @@ export async function sessionCheckAndSetLogin(
   password: string,
   key: string = "" // 플라워 인트라넷 key 값
 ): Promise<Boolean> {
-  sendToLog("접근");
-
-  sendToLog("ㄱㄱㄱㄱ");
-
   if (url === ssUrl) {
     sendToLog("url: " + url);
     sendToLog("[삼신상사] url 접근");
@@ -67,9 +64,30 @@ export async function sessionCheckAndSetLogin(
       }
     }
   } else if (url === roseUrl) {
-    await page.goto(url, {
-      waitUntil: "domcontentloaded",
-    });
+    page.on("console", (msg) => sendToLog("[플라워 인트라넷] " + msg.text()));
+    try {
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 10000 });
+    } catch (err: any) {
+      sendToLog("[플라워 인트라넷] 페이지 이동 실패: " + err.message);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (page.url().startsWith("chrome-error://")) {
+      sendToLog("[플라워 인트라넷] ⚠ SSL 에러 발생 - 수동 넘김 필요");
+      sendToLog('[플라워 인트라넷] ⚠ SSL 경고! "고급" → "계속" 눌러주세요.');
+
+      while (true) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        const currentUrl = page.url();
+
+        if (!currentUrl.startsWith("chrome-error://")) {
+          sendToLog("[플라워 인트라넷] ✅ 정상 페이지 도착");
+          break;
+        }
+        sendToLog('[플라워 인트라넷] ⚠ SSL 경고! "고급" → "계속" 눌러주세요.');
+      }
+    }
+
     let loginButtonExists = (await page.$('input[alt="로그인버튼"]')) !== null;
 
     if (loginButtonExists) {
@@ -93,16 +111,17 @@ export async function sessionCheckAndSetLogin(
       });
       // 로그인 정보 입력
       await page.waitForSelector('input[name="sid"]', { visible: true });
-      await page.type('input[name="sid"]', id);
+      await page.type('input[name="sid"]', id, { delay: 50 });
       await page.waitForSelector('input[name="spw"]', { visible: true });
-      await page.type('input[name="spw"]', password);
+      await page.type('input[name="spw"]', password, { delay: 50 });
       await page.waitForSelector('input[name="skey"]', { visible: true });
-      await page.type('input[name="skey"]', key);
+      await page.type('input[name="skey"]', key, { delay: 50 });
 
-      await Promise.all([
-        page.click('input[alt="로그인버튼"]'),
-        page.waitForNavigation({ waitUntil: "load" }),
-      ]);
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      // await Promise.all([
+      //   page.click('input[alt="로그인버튼"]'),
+      //   page.waitForNavigation({ waitUntil: "load" }),
+      // ]);
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) === null;
 
       if (loginButtonExists) {
