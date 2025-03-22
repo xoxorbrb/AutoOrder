@@ -41,6 +41,7 @@ export async function ssOrderDataScraper(
   ssData.url = url;
   // TODO: URL로부터 데이터 수집
   const page: Page = await browser.newPage();
+  page.setViewport({ width: 1280, height: 800 });
 
   await page.goto(url, { waitUntil: "load" });
 
