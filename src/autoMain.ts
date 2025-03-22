@@ -97,8 +97,9 @@ export async function scrapeAndAutoInput(data: any) {
     await autoLogin.sessionCheckAndSetLogin(
       rosePage,
       roseBasicUrl,
-      roseRnmId,
-      roseRnmPw
+      roseId,
+      rosePw,
+      roseKey
     );
     await rosePage.reload({ waitUntil: "load" });
     const roseNewUrls: string[] = await scrapUrls.roseScrapedNewUrls(
@@ -109,9 +110,8 @@ export async function scrapeAndAutoInput(data: any) {
     await autoLogin.sessionCheckAndSetLogin(
       rnmPage,
       rnmBasicUrl,
-      roseId,
-      rosePw,
-      roseKey
+      roseRnmId,
+      roseRnmPw
     );
 
     for (const roseUrl of roseNewUrls) {
@@ -120,7 +120,7 @@ export async function scrapeAndAutoInput(data: any) {
     }
     await autoLogin.logoutRNM(rnmPage);
 
-    sendToLog("완료 후 기다리는중 . . .");
+    sendToLog(". . . 완료 후 기다리는중 . . .");
   };
 
   await run();
