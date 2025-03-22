@@ -91,8 +91,11 @@ export async function roseScrapedNewUrls(
   date: string
 ): Promise<string[]> {
   let urls: string[] = [];
+  sendToLog("[플라워 인트라넷] date: " + date + " 이후 정보 스크랩");
+
   await page.waitForSelector("tr");
 
+  page.on("console", (msg) => sendToLog("[플라워 인트라넷] " + msg.text()));
   await page.$$eval(
     "tr",
     (rows, baseUrl, date) => {
@@ -115,10 +118,9 @@ export async function roseScrapedNewUrls(
           tds[1]?.querySelector("div")?.textContent?.trim() || ""; // 두 번째 td의 첫 div 찾기 (시간)
 
         if (linkElement && dateText) {
-          // const rowDate = parseCustomDateTime(dateText);
-          const rowDate = inputDate;
+          const rowDate = parseCustomDateTime(dateText);
           if (rowDate > inputDate) {
-            // urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
+            urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
             const link: string =
               linkElement
                 .getAttribute("onclick")
@@ -132,25 +134,6 @@ export async function roseScrapedNewUrls(
     "http://16441644.roseweb.co.kr",
     date
   );
-  // await page.$$eval(
-  //   "a",
-  //   (anchors, baseUrl) => {
-  //     anchors.forEach((anchor) => {
-  //       const onClickAttr = (anchor as HTMLAnchorElement).getAttribute(
-  //         "onCiick"
-  //       );
-  //       if (onClickAttr && onClickAttr.length > 0) {
-  //         const urlMatch: RegExpMatchArray | null = onClickAttr.match(
-  //           /window\.open\(['"]([^'"]+)['"]/
-  //         );
-  //         const url = new URL(urlMatch ? urlMatch[1] : "", baseUrl)
-  //           .href as string;
-  //         urls.push(url);
-  //       }
-  //     });
-  //   },
-  //   page.url()
-  // );
 
   const newUrls = urls.filter((url) => !roseScrapedUrls.has(url)) as string[];
 
