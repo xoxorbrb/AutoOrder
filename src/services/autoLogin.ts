@@ -22,7 +22,7 @@ export async function sessionCheckAndSetLogin(
     let alertOn: Boolean = false;
 
     page.on("dialog", async (dialog) => {
-      sendToLog("알림 감지");
+      sendToLog("[삼신상사] 알림 감지");
       alertOn = true;
       await dialog.dismiss(); // 알럿창 끄기
     });
@@ -30,7 +30,6 @@ export async function sessionCheckAndSetLogin(
       waitUntil: "domcontentloaded",
     });
     if ((alertOn = true)) {
-      sendToLog("알림 감지11");
       await page.reload({ waitUntil: "networkidle2" });
 
       const currentUrl = page.url();
@@ -47,17 +46,6 @@ export async function sessionCheckAndSetLogin(
 
         await page.focus('input[name="member_pw"]');
         await page.type('input[name="member_pw"]', password, { delay: 50 });
-        // await page.evaluate(() => {
-        //   const idField = document.querySelector(
-        //     'input[name="member_id"]'
-        //   ) as HTMLInputElement;
-        //   const pwField = document.querySelector(
-        //     'input[name="member_pw"]'
-        //   ) as HTMLInputElement;
-
-        //   if (idField) idField.value = ""; //아이디 입력 필드 초기화  (중복방지)
-        //   if (pwField) pwField.value = ""; //패스워드 입력 필드 초기화  (중복방지)
-        // });
 
         await Promise.all([
           page.click('input[id="btn-login"]'),
@@ -74,7 +62,7 @@ export async function sessionCheckAndSetLogin(
           return false;
         }
       } else {
-        sendToLog("[삼신상사]로그인 되어있음");
+        sendToLog("[삼신상사] 로그인 되어있음");
         return true;
       }
     }
