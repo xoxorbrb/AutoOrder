@@ -2,7 +2,8 @@ import type { Page } from "puppeteer";
 import { sendToLog } from "../autoMain";
 const ssUrl: string = "https://samsincall.com/partners/orders/"; //삼신상사
 const roseUrl: string = "http://16441644.roseweb.co.kr/index.htm"; // 플라워 인트라넷
-const rnmUrl: string = "http://16005423.co.kr/agent/"; // rnm 발주페이지
+const rnmBasicUrl: string = "http://16005423.co.kr/agent/"; // rnm 발주 기본 페이지
+const rnmUrl: string = "http://16005423.co.kr/agent/balju.html";
 
 // 로그인 상태 확인 및 로그인 자동화
 export async function sessionCheckAndSetLogin(
@@ -117,25 +118,35 @@ export async function sessionCheckAndSetLogin(
       await page.waitForSelector('input[name="skey"]', { visible: true });
       await page.type('input[name="skey"]', key, { delay: 50 });
 
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      // await Promise.all([
-      //   page.click('input[alt="로그인버튼"]'),
-      //   page.waitForNavigation({ waitUntil: "load" }),
-      // ]);
+      await Promise.all([
+        page.click('input[alt="로그인버튼"]'),
+        page.waitForNavigation({ waitUntil: "load" }),
+      ]);
+
+      let setupPage = "http://16441644.roseweb.co.kr/setup_pw.php";
+
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) === null;
 
       if (loginButtonExists) {
         sendToLog("[플라워 인트라넷] 로그인 성공");
+        if (page.url() === setupPage) {
+          sendToLog(
+            "[플라워 인트라넷] 비밀번호 수정 페이지 => 다음에 변경하기"
+          );
+          await page.goto("http://16441644.roseweb.co.kr/");
+        }
         return true;
       } else {
         sendToLog("[플라워 인트라넷] 로그인 실패");
         return false;
       }
     }
-  } else if (url === rnmUrl) {
+  } else if (url === rnmUrl || url === rnmBasicUrl) {
     await page.goto(url, {
       waitUntil: "domcontentloaded",
     });
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     let loginButtonExists =
       (await page.$("button.btn.btn-primary.btn-block.btn-flat")) !== null;
 
@@ -153,22 +164,31 @@ export async function sessionCheckAndSetLogin(
         idField.value = "";
         pwField.value = "";
       });
-      await page.type('input[name="in_uid"]', id);
-      await page.type('input[name="in_upw"]', password);
+      await page.type('input[name="in_uid"]', id, { delay: 50 });
+      await page.type('input[name="in_upw"]', password, { delay: 50 });
 
       await Promise.all([
         page.click("button.btn.btn-primary.btn-block.btn-flat"),
         page.waitForNavigation({ waitUntil: "load" }),
       ]);
+
       loginButtonExists = (await page.$('input[alt="로그인버튼"]')) === null;
 
       if (loginButtonExists) {
         sendToLog("[RNM] 로그인 성공");
+
+        const memoryCookies = await page.browserContext().cookies();
+        await page.setCookie(...memoryCookies);
+        sendToLog("[RNM] 쿠키 메모리에 저장 완료");
+
+        await page.goto(url, { waitUntil: "networkidle0" });
         return true;
       } else {
         sendToLog("[RNM] 로그인 실패");
         return false;
       }
+    } else {
+      sendToLog("[RNM] 로그인 되어있음");
     }
   }
   return true;
