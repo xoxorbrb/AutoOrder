@@ -1,14 +1,5 @@
 import puppeteer, { Browser, Page } from "puppeteer";
-
-const ssKeyMapping = {
-  customerName: "고객명",
-  phone: "휴대폰1/휴대폰2",
-  telephone: "유선전화",
-  deliveryAddress: "배송지",
-  flowerName: "화환명",
-  leftText: "좌측 문구",
-  rightText: "우측 문구",
-};
+import { sendToLog } from "../autoMain";
 
 const roseKeyMapping = {
   recipientName: "받는고객명",
@@ -37,6 +28,7 @@ export async function ssOrderDataScraper(
   browser: Browser
 ): Promise<Object> {
   // 삼신 데이터
+
   let ssData: { [key: string]: any } = {};
   ssData.url = url;
   // TODO: URL로부터 데이터 수집
@@ -44,11 +36,28 @@ export async function ssOrderDataScraper(
   page.setViewport({ width: 1280, height: 800 });
 
   await page.goto(url, { waitUntil: "load" });
-
+  sendToLog("[삼신상사] 데이터 수집 합니다.");
   // const rowHeightKeyClass: string[]= ["table-blue", "table-green", "table-gray"]; // 키를 가지고 있는 태그의 클래스 속성
-
+  page.on("console", (msg) => sendToLog("[삼신상사] " + msg.text()));
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve(); // Promise 해결
+    }, 1000); // 1초 대기
+  });
   //데이터 추출
-  await page.$$eval(".row-height", (rows) => {
+
+  console.log(await page.frames().map((f) => f.url()));
+  const basicData = await page.$$eval(".row-height", (rows) => {
+    const ssKeyMapping = {
+      customerName: "고객명",
+      phone: "휴대폰1/휴대폰2",
+      telephone: "유선전화",
+      deliveryAddress: "배송지",
+      flowerName: "화환명",
+      leftText: "좌측 문구",
+      rightText: "우측 문구",
+    };
+    let result: { [key: string]: any } = {};
     rows.forEach((row) => {
       const keyTags: HTMLElement[] = Array.from(
         row.querySelectorAll(".table-blue, .table-green")
@@ -69,11 +78,14 @@ export async function ssOrderDataScraper(
         );
 
         if (mappedKey) {
-          ssData[mappedKey] = value;
+          console.log(`${mappedKey}: ${value}`);
+          result[mappedKey] = value;
         }
       });
     });
+    return result;
   });
+  ssData = { ...ssData, ...basicData };
   //금액 확인
   const priceParent = await page.$(
     ".col-xs-3.col-height.col-middle.line-l.line-r"
@@ -87,7 +99,8 @@ export async function ssOrderDataScraper(
   }
 
   //리본데이터 추출
-  await page.$$eval(".inside", (insideTags) => {
+  const ribonData = await page.$$eval(".inside", (insideTags) => {
+    let result: { [key: string]: any } = {};
     insideTags.forEach((inside) => {
       const valueList = Array.from(
         inside.querySelectorAll(".row-height:not(.line-t)")
@@ -104,16 +117,19 @@ export async function ssOrderDataScraper(
 
       valueList.forEach((value, index) => {
         if (index % 3 === 0) {
-          ssData.flowerName = [...(ssData.flowerName || []), value];
+          result.flowerName = [...(result.flowerName || []), value];
         } else if (index % 3 === 2) {
-          ssData.rightText = [...(ssData.rightText || []), value];
+          result.rightText = [...(result.rightText || []), value];
         } else if (index % 3 === 1) {
-          ssData.leftText = [...(ssData.leftText || []), value];
+          result.leftText = [...(result.leftText || []), value];
         }
       });
     });
+    return result;
   });
-
+  ssData = { ...ssData, ...ribonData };
+  sendToLog("[삼신상사] 데이터 추출 결과: " + JSON.stringify(ssData));
+  await page.close();
   return ssData;
 }
 
