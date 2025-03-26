@@ -176,12 +176,6 @@ export async function sessionCheckAndSetLogin(
 
       if (loginButtonExists) {
         sendToLog("[RNM] 로그인 성공");
-
-        const memoryCookies = await page.browserContext().cookies();
-        await page.setCookie(...memoryCookies);
-        sendToLog("[RNM] 쿠키 메모리에 저장 완료");
-
-        await page.goto(url, { waitUntil: "networkidle0" });
         return true;
       } else {
         sendToLog("[RNM] 로그인 실패");
