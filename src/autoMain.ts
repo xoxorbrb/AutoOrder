@@ -10,7 +10,7 @@ let isRunning: boolean = true;
 
 const ssBasicUrl = "https://samsincall.com/partners/orders/";
 const roseBasicUrl = "http://16441644.roseweb.co.kr/index.htm";
-const rnmUrl = "http://16005423.co.kr/agent/balju.html";
+const rnmBasicUrl = "http://16005423.co.kr/agent/";
 let ssId = "";
 let ssPw = "";
 let roseId = "";
@@ -77,7 +77,12 @@ export async function scrapeAndAutoInput(data: any) {
 
     const ssNewUrls: string[] = await scrapUrls.ssScrapeNewUrls(ssPage, date);
     // rnm 아이디 로그인 (삼신 발주 아이디로 해야됨)
-    await autoLogin.sessionCheckAndSetLogin(rnmPage, rnmUrl, ssRnmId, ssRnmPw);
+    await autoLogin.sessionCheckAndSetLogin(
+      rnmPage,
+      rnmBasicUrl,
+      ssRnmId,
+      ssRnmPw
+    );
 
     for (const ssUrl of ssNewUrls) {
       let data = await scrapData.ssOrderDataScraper(ssUrl, ssBrowser);
@@ -102,7 +107,7 @@ export async function scrapeAndAutoInput(data: any) {
 
     await autoLogin.sessionCheckAndSetLogin(
       rnmPage,
-      rnmUrl,
+      rnmBasicUrl,
       roseRnmId,
       roseRnmPw
     );
