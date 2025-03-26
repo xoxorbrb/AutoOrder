@@ -87,13 +87,13 @@ export async function ssOrderDataScraper(
   });
   ssData = { ...ssData, ...basicData };
   //금액 확인
-  const priceParent = await page.$(
+  const priceParents = await page.$$(
     ".col-xs-3.col-height.col-middle.line-l.line-r"
   );
 
-  if (priceParent) {
-    const priceTag = await priceParent.$(".inside");
-    const price = priceTag?.evaluate((el) => el.textContent?.trim());
+  if (priceParents) {
+    const priceTag = await priceParents[1].$(".inside");
+    const price = await priceTag?.evaluate((el) => el.textContent?.trim());
 
     ssData.price = price;
   }
