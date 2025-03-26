@@ -13,7 +13,6 @@ export async function ssScrapeNewUrls(
 
   await new Promise<void>((resolve) => {
     setTimeout(() => {
-      console.log("1초가 지났습니다!"); // resolve 전에 console.log 찍기
       resolve(); // Promise 해결
     }, 1000); // 1초 대기
   });
@@ -44,15 +43,12 @@ export async function ssScrapeNewUrls(
       rows.forEach((row) => {
         const computedStyle = window.getComputedStyle(row);
         if (
-          computedStyle.backgroundColor === "rgb(227, 243, 246)" ||
-          computedStyle.backgroundColor === "rgb(251, 241, 246)" ||
-          computedStyle.backgroundColor === "rgb(138, 250, 175)"
+          computedStyle.backgroundColor !== "rgb(227, 243, 246)" &&
+          computedStyle.backgroundColor !== "rgb(251, 241, 246)" &&
+          computedStyle.backgroundColor !== "rgb(138, 250, 175)"
         ) {
-          console.log("URL 찾기");
-        } else {
           return;
         }
-
         const tds = row.querySelectorAll("td");
         const linkElement = tds[0]?.querySelector("a"); // 첫 번째 td에서 a 태그 찾기 (url)
         const dateText =
