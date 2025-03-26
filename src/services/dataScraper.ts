@@ -175,5 +175,6 @@ export async function roseOrderDataScraper(
       roseData[mapped] = value;
     }
   });
+  sendToLog("[플라워 인트라넷] 데이터 추출 결과: " + JSON.stringify(roseData));
   return roseData;
 }
