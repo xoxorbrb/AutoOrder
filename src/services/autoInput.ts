@@ -1,9 +1,26 @@
 import type { Page } from "puppeteer";
-
-const url = "http://16005423.co.kr/agent/balju.html";
+import { sendToLog } from "../autoMain";
 
 export async function ssSendInput(data: Record<string, any>, page: Page) {
-  await page.goto(url, { waitUntil: "load" });
+  page.on("dialog", async (dialog) => {
+    console.log("알럿 내용:", dialog.message());
+    await dialog.dismiss(); // 또는 dialog.accept();
+  });
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve(); // Promise 해결
+    }, 1000); // 1초 대기
+  });
+  // await page.waitForSelector('a[href="balju.html"]', { visible: true });
+  // await page.click('a[href="balju.html"]');
+  await page.waitForSelector('a[href="/admin/menu02.php"]', { visible: true });
+  await page.click('a[href="/admin/menu02.php"]');
+
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve(); // Promise 해결
+    }, 1000); // 1초 대기
+  });
 
   //드롭다운 상품명 선택
   let flowerName = data.flowerName[0];
@@ -13,7 +30,7 @@ export async function ssSendInput(data: Record<string, any>, page: Page) {
     await page.select('select[data-select2-id="ptype"]', selectFlower);
   }
 
-  let count = data.flowerName.size();
+  let count = data.flowerName.length;
   let selectCount = "";
 
   if (count < 10) {
@@ -44,7 +61,12 @@ export async function ssSendInput(data: Record<string, any>, page: Page) {
 }
 
 export async function roseSendInput(data: Record<string, any>, page: Page) {
-  await page.goto(url, { waitUntil: "load" });
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve(); // Promise 해결
+    }, 1000); // 1초 대기
+  });
+  await page.click('a[href="balju.html"]');
 
   const flowerName = data.flowerName?.split(" ").join("");
   let selectFlower = setSelectFlower(flowerName);
