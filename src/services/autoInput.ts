@@ -53,16 +53,30 @@ export async function ssSendInput(
   await page.type('input[name="raddr"]', data.deliveryAddress);
 
   //경조사어
-  let leftText = data.leftText
-    .map((val: string, index: number) => `${index + 1}. ${val}`)
-    .join(" ");
-  await page.type('input[name="rgyungjo_1"]', leftText);
-
-  //보내실분 명의
   let rightText = data.rightText
     .map((val: string, index: number) => `${index + 1}. ${val}`)
     .join(" ");
-  await page.type('input[name="rsend_1"]', rightText);
+  await page.type('input[name="rgyungjo_1"]', rightText);
+
+  //보내실분 명의
+  let leftText = data.leftText
+    .map((val: string, index: number) => `${index + 1}. ${val}`)
+    .join(" ");
+  await page.type('input[name="rsend_1"]', leftText);
+
+  await page.type('input[name="sname"]', leftText);
+
+  //받는분 명의
+  await page.type('input[name="rname"', data.customerName);
+
+  //받는분 전화
+  await page.type('input[name="rtel"', data.telephone);
+
+  //받는분 휴대폰
+  await page.type('input[name="rphone"', data.phone);
+
+  //요구사항
+  await page.type('textarea[name="remark"', data.request);
 
   await clickShowOrderButton(page, rnmBrowser);
 }
@@ -118,6 +132,19 @@ export async function roseSendInput(
 
   //보내는분 명의
   await page.type('input[name="rsend_1"]', data.senderName);
+  await page.type('input[name="sname"]', data.senderName);
+
+  //받는분 명의
+  await page.type('input[name="rname"', data.recipientName);
+
+  //받는분 전화
+  await page.type('input[name="rtel"', data.telephone);
+
+  //받는분 휴대폰
+  await page.type('input[name="rphone"', data.phone);
+
+  //요구사항
+  await page.type('textarea[name="remark"', data.request);
 
   await clickShowOrderButton(page, rnmBrowser);
 }

@@ -12,6 +12,7 @@ const roseKeyMapping = {
   message: "경조사어",
   flowerName: "상품정보",
   senderName: "보내는분",
+  request: "요청사항",
 };
 
 // export interface OrderData {
@@ -56,6 +57,7 @@ export async function ssOrderDataScraper(
       flowerName: "화환명",
       leftText: "좌측 문구",
       rightText: "우측 문구",
+      request: "요청사항",
     };
     let result: { [key: string]: any } = {};
     rows.forEach((row) => {
@@ -139,8 +141,13 @@ export async function roseOrderDataScraper(
 ): Promise<Object> {
   let roseData: { [key: string]: string } = {};
   roseData.url = url;
-
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve(); // Promise 해결
+    }, 1000); // 1초 대기
+  });
   const page: Page = await browser.newPage();
+  page.setViewport({ width: 1280, height: 800 });
 
   //페이지 이동
   await page.goto(url, { waitUntil: "load" });
@@ -148,33 +155,43 @@ export async function roseOrderDataScraper(
   //데이터 추출 , 삼신상사와 다르게 값에 모두 아이디가 존재하여 다른방식으로 추출
   const keyName = {
     arrive_name: "받는고객명",
-    arrive_tel: "휴대폰",
-    arrive_htel: "전화",
+    arrive_tel: "전화",
+    arrive_htel: "휴대폰",
     origin_price: "원청금액",
     gprice: "결제금액",
-    arrive_place: "배달장소",
+    arrive_place1: "배달장소",
+    arrive_place2: "배달장소1",
     ribon: "경조사어",
     good_etc: "상품정보",
     su: "수량",
     ribon_card: "보내는분",
+    o_demand: "요청사항",
   };
 
-  Object.keys(keyName).forEach(async (key) => {
+  for (const key of Object.keys(keyName)) {
     const tagName = keyName[key as keyof typeof keyName];
-    const value = await page.$eval(
-      `input[name=${key}]`,
-      (input) => (input as HTMLInputElement).value
-    );
+    let value: string = "";
+    if (key === "o_demand") {
+      value = await page.$eval(
+        `textarea[name=${key}]`,
+        (input) => (input as HTMLTextAreaElement).value
+      );
+    } else {
+      value = await page.$eval(
+        `input[name=${key}]`,
+        (input) => (input as HTMLInputElement).value
+      );
+    }
 
     const mapped = Object.keys(roseKeyMapping).find(
       (k: string) =>
         roseKeyMapping[k as keyof typeof roseKeyMapping] === tagName
     );
-
     if (mapped) {
       roseData[mapped] = value;
     }
-  });
+  }
   sendToLog("[플라워 인트라넷] 데이터 추출 결과: " + JSON.stringify(roseData));
+  await page.close();
   return roseData;
 }
