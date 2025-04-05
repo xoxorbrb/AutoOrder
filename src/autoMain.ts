@@ -25,27 +25,31 @@ let date = "";
 let mainWindow: BrowserWindow;
 export async function scrapeAndAutoInput(data: any) {
   console.log("🚀 autoMain.ts 실행됨!", data);
-  const mainWindow = BrowserWindow.getAllWindows()[0];
+  // const mainWindow = BrowserWindow.getAllWindows()[0];
 
-  const roseBrowser: Browser = await puppeteer.launch({
-    headless: false, // GUI 실행 (숨김 모드: true)
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  }); //1644 브라우저
-  const rosePage: Page = await roseBrowser.newPage();
-  await rosePage.setViewport({ width: 1280, height: 800 });
   const ssBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   }); //samsin 브라우저
-  const ssPage: Page = await ssBrowser.newPage();
+  const ssPages: Page[] = await ssBrowser.pages();
+  const ssPage: Page = ssPages[0];
   await ssPage.setViewport({ width: 1280, height: 800 });
 
   const rnmBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
-  const rnmPage: Page = await rnmBrowser.newPage();
+  const rnmPages: Page[] = await rnmBrowser.pages();
+  const rnmPage: Page = rnmPages[0];
   await rnmPage.setViewport({ width: 1280, height: 800 });
+
+  const roseBrowser: Browser = await puppeteer.launch({
+    headless: false, // GUI 실행 (숨김 모드: true)
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  }); //1644 브라우저
+  const rosePages: Page[] = await roseBrowser.pages();
+  const rosePage: Page = rosePages[0];
+  await rosePage.setViewport({ width: 1280, height: 800 });
 
   ssId = data.ss.id;
   ssPw = data.ss.pw;
@@ -84,7 +88,7 @@ export async function scrapeAndAutoInput(data: any) {
 
     for (const roseUrl of roseNewUrls) {
       let data = await scrapData.roseOrderDataScraper(roseUrl, roseBrowser);
-      await autoInput.roseSendInput(data, rnmPage);
+      await autoInput.roseSendInput(data, rnmPage, rnmBrowser);
     }
     await autoLogin.logoutRNM(rnmPage);
 
@@ -106,7 +110,7 @@ export async function scrapeAndAutoInput(data: any) {
 
     for (const ssUrl of ssNewUrls) {
       let data = await scrapData.ssOrderDataScraper(ssUrl, ssBrowser);
-      await autoInput.ssSendInput(data, rnmPage);
+      await autoInput.ssSendInput(data, rnmPage, rnmBrowser);
     }
     await autoLogin.logoutRNM(
       rnmPage //로그아웃 url
