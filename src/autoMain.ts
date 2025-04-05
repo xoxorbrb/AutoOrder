@@ -27,18 +27,19 @@ export async function scrapeAndAutoInput(data: any) {
   console.log("🚀 autoMain.ts 실행됨!", data);
   const mainWindow = BrowserWindow.getAllWindows()[0];
 
-  const ssBrowser: Browser = await puppeteer.launch({
-    headless: false, // GUI 실행 (숨김 모드: true)
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  }); //samsin 브라우저
-  const ssPage: Page = await ssBrowser.newPage();
-  await ssPage.setViewport({ width: 1280, height: 800 });
   const roseBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   }); //1644 브라우저
   const rosePage: Page = await roseBrowser.newPage();
   await rosePage.setViewport({ width: 1280, height: 800 });
+  const ssBrowser: Browser = await puppeteer.launch({
+    headless: false, // GUI 실행 (숨김 모드: true)
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  }); //samsin 브라우저
+  const ssPage: Page = await ssBrowser.newPage();
+  await ssPage.setViewport({ width: 1280, height: 800 });
+
   const rnmBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -63,12 +64,31 @@ export async function scrapeAndAutoInput(data: any) {
     setMainWindow(mainWindow);
 
     sendToLog(now.toString() + " 로직 실행");
-    let isLogin = await autoLogin.sessionCheckAndSetLogin(
-      ssPage,
-      ssBasicUrl,
-      ssId,
-      ssPw
-    ); // 필요 시 로그아웃 이벤트 잡아서 바로 중지하는 거 개발 필요, 현재로서는 딱히 세션 끊는게 보이지 않아서 1분에 한번씩 체크하도록 되어있음
+
+    await autoLogin.sessionCheckAndSetLogin(
+      rosePage,
+      roseBasicUrl,
+      roseId,
+      rosePw,
+      roseKey
+    );
+    await rosePage.reload({ waitUntil: "load" });
+    const roseNewUrls: string[] = await scrapUrls.roseScrapedNewUrls(rosePage);
+
+    await autoLogin.sessionCheckAndSetLogin(
+      rnmPage,
+      rnmBasicUrl,
+      roseRnmId,
+      roseRnmPw
+    );
+
+    for (const roseUrl of roseNewUrls) {
+      let data = await scrapData.roseOrderDataScraper(roseUrl, roseBrowser);
+      await autoInput.roseSendInput(data, rnmPage);
+    }
+    await autoLogin.logoutRNM(rnmPage);
+
+    await autoLogin.sessionCheckAndSetLogin(ssPage, ssBasicUrl, ssId, ssPw); // 필요 시 로그아웃 이벤트 잡아서 바로 중지하는 거 개발 필요, 현재로서는 딱히 세션 끊는게 보이지 않아서 1분에 한번씩 체크하도록 되어있음
 
     /**
      * 1. 삼신 url 가져오기 -> 데이터 스크랩 -> rnm 삼신 발주아이디로 로그인 -> 발주 데이터 입력 -> 삼신 발주아이디 로그아웃
@@ -91,32 +111,6 @@ export async function scrapeAndAutoInput(data: any) {
     await autoLogin.logoutRNM(
       rnmPage //로그아웃 url
     );
-
-    await autoLogin.sessionCheckAndSetLogin(
-      rosePage,
-      roseBasicUrl,
-      roseId,
-      rosePw,
-      roseKey
-    );
-    await rosePage.reload({ waitUntil: "load" });
-    const roseNewUrls: string[] = await scrapUrls.roseScrapedNewUrls(
-      rosePage,
-      date
-    );
-
-    await autoLogin.sessionCheckAndSetLogin(
-      rnmPage,
-      rnmBasicUrl,
-      roseRnmId,
-      roseRnmPw
-    );
-
-    for (const roseUrl of roseNewUrls) {
-      let data = await scrapData.roseOrderDataScraper(roseUrl, roseBrowser);
-      await autoInput.roseSendInput(data, rnmPage);
-    }
-    await autoLogin.logoutRNM(rnmPage);
 
     sendToLog(". . . 완료 후 기다리는중 . . .");
   };
