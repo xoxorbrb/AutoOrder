@@ -1,7 +1,11 @@
-import type { Page } from "puppeteer";
+import type { Browser, Page } from "puppeteer";
 import { sendToLog } from "../autoMain";
 
-export async function ssSendInput(data: Record<string, any>, page: Page) {
+export async function ssSendInput(
+  data: Record<string, any>,
+  page: Page,
+  rnmBrowser: Browser
+) {
   page.on("dialog", async (dialog) => {
     console.log("알럿 내용:", dialog.message());
     await dialog.dismiss(); // 또는 dialog.accept();
@@ -9,12 +13,13 @@ export async function ssSendInput(data: Record<string, any>, page: Page) {
   await new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve(); // Promise 해결
-    }, 1000); // 1초 대기
+    }, 2000); // 1초 대기
   });
   // await page.waitForSelector('a[href="balju.html"]', { visible: true });
   // await page.click('a[href="balju.html"]');
-  await page.waitForSelector('a[href="/admin/menu02.php"]', { visible: true });
-  await page.click('a[href="/admin/menu02.php"]');
+  await page.goto("https://16005423.co.kr/agent/balju.html");
+  // await page.waitForSelector('a[href="/admin/menu02.php"]', { visible: true });
+  // await page.click('a[href="/admin/menu02.php"]');
 
   await new Promise<void>((resolve) => {
     setTimeout(() => {
@@ -58,16 +63,31 @@ export async function ssSendInput(data: Record<string, any>, page: Page) {
     .map((val: string, index: number) => `${index + 1}. ${val}`)
     .join(" ");
   await page.type('input[name="rsend_1"]', rightText);
+
+  await clickShowOrderButton(page, rnmBrowser);
 }
 
-export async function roseSendInput(data: Record<string, any>, page: Page) {
+export async function roseSendInput(
+  data: Record<string, any>,
+  page: Page,
+  rnmBrowser: Browser
+) {
   await new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve(); // Promise 해결
     }, 1000); // 1초 대기
   });
-  await page.click('a[href="balju.html"]');
+  // await page.waitForSelector('a[href="balju.html"]', { visible: true });
+  // await page.click('a[href="balju.html"]');
+  await page.goto("https://16005423.co.kr/agent/balju.html");
+  // await page.waitForSelector('a[href="/admin/menu02.php"]', { visible: true });
+  // await page.click('a[href="/admin/menu02.php"]');
 
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve(); // Promise 해결
+    }, 1000); // 1초 대기
+  });
   const flowerName = data.flowerName?.split(" ").join("");
   let selectFlower = setSelectFlower(flowerName);
 
@@ -98,6 +118,8 @@ export async function roseSendInput(data: Record<string, any>, page: Page) {
 
   //보내는분 명의
   await page.type('input[name="rsend_1"]', data.senderName);
+
+  await clickShowOrderButton(page, rnmBrowser);
 }
 
 function setSelectFlower(flowerName: string): string {
@@ -177,4 +199,38 @@ function setSelectFlower(flowerName: string): string {
   }
 
   return selectFlower;
+}
+
+async function clickShowOrderButton(page: Page, browser: Browser) {
+  await page.evaluate(() => {
+    const btn = Array.from(document.querySelectorAll("a")).find((el) =>
+      el.getAttribute("onclick")?.includes("submit_form('0')")
+    );
+    if (btn) btn.click();
+  });
+
+  const popupPromise = new Promise<Page>((resolve) => {
+    browser.once("targetcreated", async (target) => {
+      const popup = (await target.page()) as Page;
+      resolve(popup);
+    });
+  });
+  const popup = await popupPromise;
+
+  await popup.waitForNavigation({ waitUntil: "load" });
+
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve(); // Promise 해결
+    }, 1000); // 1초 대기
+  });
+
+  // await popup.evaluate(() => {
+  //   const btn = Array.from(document.querySelectorAll("a")).find(
+  //     (el) =>
+  //       // el.getAttribute("onclick")?.includes("frm1.submit()") //실제
+  //       el.getAttribute("onclick")?.includes("window.close()") //테스트
+  //   );
+  //   if (btn) btn.click();
+  // });
 }
