@@ -37,6 +37,8 @@ ipcMain.on("scrape-and-auto-input", (_, data) => {
   scrapeAndAutoInput(data);
 });
 
-ipcMain.on("stop-scrapping", () => {
-  stopScrapping();
+ipcMain.on("stop-scrapping", async () => {
+  await stopScrapping();
+  const mainWindow = BrowserWindow.getAllWindows()[0];
+  mainWindow.close();
 });

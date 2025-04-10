@@ -63,6 +63,9 @@ export async function scrapeAndAutoInput(data: any) {
   date = data.date + " " + data.time;
 
   const run = async () => {
+    if (!isRunning) {
+      return;
+    }
     let now = new Date();
     const mainWindow = BrowserWindow.getAllWindows()[0];
     setMainWindow(mainWindow);
@@ -126,7 +129,6 @@ export async function scrapeAndAutoInput(data: any) {
 
 export function stopScrapping() {
   isRunning = false;
-  sendToLog("스크랩 중지");
 }
 
 export function sendToLog(message: string) {
