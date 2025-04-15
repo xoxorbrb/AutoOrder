@@ -18,7 +18,6 @@ export async function ssSendInput(
   // await page.waitForSelector('a[href="balju.html"]', { visible: true });
   // await page.click('a[href="balju.html"]');
   await page.goto("https://16005423.co.kr/agent/balju.html");
-  // await page.waitForSelector('a[href="/admin/menu02.php"]', { visible: true });
   // await page.click('a[href="/admin/menu02.php"]');
 
   await new Promise<void>((resolve) => {
@@ -64,19 +63,36 @@ export async function ssSendInput(
     .join(" ");
   await page.type('input[name="rsend_1"]', leftText);
 
-  await page.type('input[name="sname"]', leftText);
+  // await page.type('input[name="sname"]', leftText);
+
+  let desiredDeliveryDate = data.desiredDeliveryDate;
 
   //받는분 명의
-  await page.type('input[name="rname"', data.customerName);
+  await page.type('input[name="rname"]', data.customerName);
 
   //받는분 전화
-  await page.type('input[name="rtel"', data.telephone);
+  await page.type('input[name="rtel"]', data.telephone);
 
   //받는분 휴대폰
-  await page.type('input[name="rphone"', data.phone);
+  await page.type('input[name="rphone"]', data.phone);
 
   //요구사항
-  await page.type('textarea[name="remark"', data.request);
+  await page.type('textarea[name="remark"]', data.request);
+
+  sendToLog("============데이터 입력 완료==============");
+  sendToLog("상품명: " + selectFlower);
+  sendToLog("수량: " + selectCount);
+  sendToLog("원청금액: " + data.price);
+  sendToLog("보낼금액: " + data.price);
+  sendToLog("주소: " + data.deliveryAddress);
+  sendToLog("경조사어: " + rightText);
+  sendToLog("보내는분 명의: " + leftText);
+  sendToLog("주문고객 성명: >>>> 삼신데이터는 없음");
+  sendToLog("받는분 성명: " + data.customerName);
+  sendToLog("받는분 전화: " + data.telephone);
+  sendToLog("받는분 휴대폰: " + data.phone);
+  sendToLog("요청사항: " + data.request);
+  sendToLog("======================================");
 
   await clickShowOrderButton(page, rnmBrowser);
 }
@@ -94,6 +110,7 @@ export async function roseSendInput(
   // await page.waitForSelector('a[href="balju.html"]', { visible: true });
   // await page.click('a[href="balju.html"]');
   await page.goto("https://16005423.co.kr/agent/balju.html");
+  // await page.goto("https://16005423.co.kr/admin/menu02.php"); //테스트
   // await page.waitForSelector('a[href="/admin/menu02.php"]', { visible: true });
   // await page.click('a[href="/admin/menu02.php"]');
 
@@ -120,7 +137,7 @@ export async function roseSendInput(
   //수량
   await page.select('select[data-select2-id="pcnt"]', selectCount);
 
-  //원청금액, 보낼금액 1원으로 통일
+  //원청금액, 보낼금액
   await page.type('input[name="poldwon"]', data.originPrice);
   await page.type('input[name="pwon"]', data.gPrice);
 
@@ -135,17 +152,31 @@ export async function roseSendInput(
   await page.type('input[name="sname"]', data.senderName);
 
   //받는분 명의
-  await page.type('input[name="rname"', data.recipientName);
+  await page.type('input[name="rname"]', data.recipientName);
 
   //받는분 전화
-  await page.type('input[name="rtel"', data.telephone);
+  await page.type('input[name="rtel"]', data.telephone);
 
   //받는분 휴대폰
-  await page.type('input[name="rphone"', data.phone);
+  await page.type('input[name="rphone"]', data.phone);
 
-  //요구사항
-  await page.type('textarea[name="remark"', data.request);
+  //요청 사항
+  await page.type('textarea[name="remark"]', data.request);
 
+  sendToLog("============데이터 입력 완료==============");
+  sendToLog("상품명: " + selectFlower);
+  sendToLog("수량: " + selectCount);
+  sendToLog("원청금액: " + data.originPrice);
+  sendToLog("보낼금액: " + data.gPrice);
+  sendToLog("주소: " + data.arrivePlace);
+  sendToLog("경조사어: " + data.message);
+  sendToLog("보내는분 명의: " + data.senderName);
+  sendToLog("주문고객 성명: " + data.senderName);
+  sendToLog("받는분 성명: " + data.recipientName);
+  sendToLog("받는분 전화: " + data.telephone);
+  sendToLog("받는분 휴대폰: " + data.phone);
+  sendToLog("요청사항: " + data.request);
+  sendToLog("======================================");
   await clickShowOrderButton(page, rnmBrowser);
 }
 
@@ -252,12 +283,11 @@ async function clickShowOrderButton(page: Page, browser: Browser) {
     }, 1000); // 1초 대기
   });
 
-  // await popup.evaluate(() => {
-  //   const btn = Array.from(document.querySelectorAll("a")).find(
-  //     (el) =>
-  //       // el.getAttribute("onclick")?.includes("frm1.submit()") //실제
-  //       el.getAttribute("onclick")?.includes("window.close()") //테스트
-  //   );
-  //   if (btn) btn.click();
-  // });
+  await popup.evaluate(() => {
+    const btn = Array.from(document.querySelectorAll("a")).find(
+      (el) => el.getAttribute("onclick")?.includes("frm1.submit()") //실제
+      // el.getAttribute("onclick")?.includes("window.close()") //테스트
+    );
+    if (btn) btn.click();
+  });
 }
