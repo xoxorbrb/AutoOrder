@@ -1,4 +1,4 @@
-import type { Browser, Page } from "puppeteer";
+import type { Browser, Page, Dialog } from "puppeteer";
 import { sendToLog } from "../autoMain";
 
 export async function ssSendInput(
@@ -33,6 +33,17 @@ export async function ssSendInput(
   if (selectFlower) {
     await page.select('select[data-select2-id="ptype"]', selectFlower);
   }
+  // const now = new Date();
+  // now.setHours(now.getHours() + 3);
+  // const hour = now.getHours().toString().padStart(2, "0");
+
+  // const currentValue = await page.$eval(
+  //   "#rhour",
+  //   (el) => (el as HTMLSelectElement).value
+  // );
+  // if (!currentValue) {
+  //   await page.select("#rhour", hour);
+  // }
 
   let count = data.flowerName.length;
   let selectCount = "";
@@ -125,6 +136,17 @@ export async function roseSendInput(
   if (selectFlower) {
     await page.select('select[data-select2-id="ptype"]', selectFlower);
   }
+  // const now = new Date();
+  // now.setHours(now.getHours() + 3);
+  // const hour = now.getHours().toString().padStart(2, "0");
+
+  // const currentValue = await page.$eval(
+  //   "#rhour",
+  //   (el) => (el as HTMLSelectElement).value
+  // );
+  // if (!currentValue) {
+  //   await page.select("#rhour", hour);
+  // }
 
   //수량 10 이하일 경우 0 추가
   let count = parseInt(data.count, 10);
@@ -177,6 +199,11 @@ export async function roseSendInput(
   sendToLog("받는분 휴대폰: " + data.phone);
   sendToLog("요청사항: " + data.request);
   sendToLog("======================================");
+  await new Promise<void>((resolve) => {
+    setTimeout(() => {
+      resolve(); // Promise 해결
+    }, 1000); // 1초 대기
+  });
   await clickShowOrderButton(page, rnmBrowser);
 }
 
@@ -260,22 +287,32 @@ function setSelectFlower(flowerName: string): string {
 }
 
 async function clickShowOrderButton(page: Page, browser: Browser) {
+  sendToLog("주문서 보기 버튼 클릭");
+  const popupPromise = new Promise<Page>((resolve) => {
+    browser.once("targetcreated", async (target) => {
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve(); // Promise 해결
+        }, 1000); // 1초 대기
+      });
+      const popup = (await target.page()) as Page;
+      popup.on("dialog", async (dialog) => {
+        console.log("📢 팝업 알럿:", dialog.message());
+        await dialog.accept();
+      });
+      await popup.waitForNavigation({ waitUntil: "load" });
+      console.log("✅ 팝업 로딩 완료 URL:", popup.url());
+      resolve(popup);
+    });
+  });
+
   await page.evaluate(() => {
     const btn = Array.from(document.querySelectorAll("a")).find((el) =>
       el.getAttribute("onclick")?.includes("submit_form('0')")
     );
     if (btn) btn.click();
   });
-
-  const popupPromise = new Promise<Page>((resolve) => {
-    browser.once("targetcreated", async (target) => {
-      const popup = (await target.page()) as Page;
-      resolve(popup);
-    });
-  });
   const popup = await popupPromise;
-
-  await popup.waitForNavigation({ waitUntil: "load" });
 
   await new Promise<void>((resolve) => {
     setTimeout(() => {
