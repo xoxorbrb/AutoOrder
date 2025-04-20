@@ -27,6 +27,10 @@ export async function scrapeAndAutoInput(data: any) {
   console.log("🚀 autoMain.ts 실행됨!", data);
   // const mainWindow = BrowserWindow.getAllWindows()[0];
 
+  if (data.disable === "Y") {
+    return;
+  }
+
   const ssBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -66,6 +70,7 @@ export async function scrapeAndAutoInput(data: any) {
     if (!isRunning) {
       return;
     }
+
     let now = new Date();
     const mainWindow = BrowserWindow.getAllWindows()[0];
     setMainWindow(mainWindow);
