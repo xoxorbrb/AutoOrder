@@ -58,6 +58,7 @@ export async function ssOrderDataScraper(
       leftText: "좌측 문구",
       rightText: "우측 문구",
       request: "요청사항",
+      desiredDeliveryDate: "희망배송일",
     };
     let result: { [key: string]: any } = {};
     rows.forEach((row) => {

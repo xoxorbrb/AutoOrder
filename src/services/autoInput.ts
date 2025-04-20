@@ -297,11 +297,11 @@ async function clickShowOrderButton(page: Page, browser: Browser) {
       });
       const popup = (await target.page()) as Page;
       popup.on("dialog", async (dialog) => {
-        console.log("📢 팝업 알럿:", dialog.message());
+        sendToLog("📢 팝업 알럿:" + dialog.message());
         await dialog.accept();
       });
-      await popup.waitForNavigation({ waitUntil: "load" });
-      console.log("✅ 팝업 로딩 완료 URL:", popup.url());
+      await popup.waitForFunction(() => document.readyState === "complete");
+      sendToLog("✅ 팝업 로딩 완료 URL:" + popup.url());
       resolve(popup);
     });
   });
@@ -319,7 +319,7 @@ async function clickShowOrderButton(page: Page, browser: Browser) {
       resolve(); // Promise 해결
     }, 1000); // 1초 대기
   });
-
+  await popup.waitForSelector("a[onclick*='frm1.submit()']");
   await popup.evaluate(() => {
     const btn = Array.from(document.querySelectorAll("a")).find(
       (el) => el.getAttribute("onclick")?.includes("frm1.submit()") //실제
