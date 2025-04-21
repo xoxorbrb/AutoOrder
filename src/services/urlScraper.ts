@@ -5,68 +5,100 @@ export const ssScrapedUrls = new Set<string>();
 export const roseScrapedUrls = new Set<string>();
 export async function ssScrapeNewUrls(
   page: Page,
-  date: string
+  startDate: string,
+  stopDate: string
 ): Promise<string[]> {
-  sendToLog("[삼신상사] date: " + date + " 이후 정보 스크랩");
-  page.on("console", (msg) => sendToLog("[삼신상사] " + msg.text()));
-  await page.waitForSelector("tr");
-
+  sendToLog("[삼신상사] 희망배송일: " + startDate + " 이후 정보 스크랩");
+  sendToLog("[삼신상사] 희망배송일: " + stopDate + " 이전 정보 스크랩");
+  const allUrls = [];
   await new Promise<void>((resolve) => {
     setTimeout(() => {
       resolve(); // Promise 해결
     }, 1000); // 1초 대기
   });
-  const urls: string[] = await page.$$eval(
-    "tr",
-    (rows, baseUrl, date) => {
-      const urls: string[] = [];
-      function parseCustomDateTime(
-        dateTimeStr: string,
-        type: string = "basic"
-      ): Date {
-        const [datePart, timePart] = dateTimeStr.split(" ");
-        let [year, month, day]: [number, number, number] = [0, 0, 0];
-        if (type === "ss") {
-          [year, month, day] = datePart.split(".").map(Number);
-        } else {
-          [year, month, day] = datePart.split("-").map(Number);
-        }
+  page.on("console", (msg) => sendToLog("[삼신상사] " + msg.text()));
+  await page.waitForSelector("tr");
 
-        const [hour, minute] = timePart.split(":").map(Number);
+  await page.click("button.btn.btn-info");
 
-        // 연도를 2000년대 기준으로 변환 (예: "25" → 2025년)
-        const fullYear = year < 100 ? 2000 + year : year;
-
-        return new Date(fullYear, month - 1, day, hour, minute);
-      }
-      const inputDate = parseCustomDateTime(date);
-      rows.forEach((row) => {
-        const computedStyle = window.getComputedStyle(row);
-        if (
-          computedStyle.backgroundColor !== "rgb(227, 243, 246)" &&
-          computedStyle.backgroundColor !== "rgb(251, 241, 246)" &&
-          computedStyle.backgroundColor !== "rgb(138, 250, 175)"
-        ) {
-          return;
-        }
-        const tds = row.querySelectorAll("td");
-        const linkElement = tds[0]?.querySelector("a"); // 첫 번째 td에서 a 태그 찾기 (url)
-        const dateText =
-          tds[1]?.querySelector("div")?.textContent?.trim() || ""; // 두 번째 td의 첫 div 찾기 (시간)
-        if (linkElement && dateText) {
-          const rowDate = parseCustomDateTime(dateText, "ss");
-          if (rowDate > inputDate) {
-            urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
+  while (true) {
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve(); // Promise 해결
+      }, 1000); // 1초 대기
+    });
+    const urls: string[] = await page.$$eval(
+      "tr",
+      (rows, baseUrl, startDate, stopDate) => {
+        const urls: string[] = [];
+        function parseCustomDateTime(
+          dateTimeStr: string,
+          type: string = "basic"
+        ): Date {
+          const [datePart, timePart] = dateTimeStr.split(" ");
+          let [year, month, day]: [number, number, number] = [0, 0, 0];
+          if (type === "ss") {
+            [year, month, day] = datePart.split(".").map(Number);
+          } else {
+            [year, month, day] = datePart.split("-").map(Number);
           }
-        }
-      });
-      return urls;
-    },
-    page.url(),
-    date
-  );
 
-  const newUrls = urls.filter((url) => !ssScrapedUrls.has(url)) as string[]; // 이전에 데이터를 얻어온 url을 제외한 url가져오기
+          const [hour, minute] = timePart.split(":").map(Number);
+
+          // 연도를 2000년대 기준으로 변환 (예: "25" → 2025년)
+          const fullYear = year < 100 ? 2000 + year : year;
+
+          return new Date(fullYear, month - 1, day, hour, minute);
+        }
+        console.log("여기들어옴?");
+        const start = parseCustomDateTime(startDate);
+        const end = parseCustomDateTime(stopDate);
+        console.log("여기들어옴?111");
+        rows.forEach((row) => {
+          const computedStyle = window.getComputedStyle(row);
+          if (
+            computedStyle.backgroundColor !== "rgb(227, 243, 246)" &&
+            computedStyle.backgroundColor !== "rgb(251, 241, 246)" &&
+            computedStyle.backgroundColor !== "rgb(138, 250, 175)"
+          ) {
+            return;
+          }
+          const tds = row.querySelectorAll("td");
+          const linkElement = tds[0]?.querySelector("a"); // 첫 번째 td에서 a 태그 찾기 (url)
+          const dateText =
+            tds[1]?.querySelectorAll("div")[1]?.textContent?.trim() || ""; // 두 번째 td의 첫 div 찾기 (시간)
+          if (linkElement && dateText) {
+            const rowDate = parseCustomDateTime(dateText, "ss");
+            console.log("희망배송일: " + rowDate);
+            console.log("시작일:  " + start);
+            console.log("종료일: " + end);
+            if (rowDate >= start && rowDate <= end) {
+              urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
+            }
+          }
+        });
+        return urls;
+      },
+      page.url(),
+      startDate,
+      stopDate
+    );
+    allUrls.push(...urls);
+    console.log("allUrls: " + allUrls);
+    const isDisabled = await page
+      .$eval("li.page-item.next", (el) => el.classList.contains("disabled"))
+      .catch(() => true); //버튼 없는 경우도 종료
+
+    if (isDisabled) {
+      break;
+    }
+    await Promise.all([
+      page.click("li.page-item.next > a"),
+      page.waitForNavigation({ waitUntil: "load" }),
+    ]);
+  }
+
+  const newUrls = allUrls.filter((url) => !ssScrapedUrls.has(url)) as string[]; // 이전에 데이터를 얻어온 url을 제외한 url가져오기
 
   if (newUrls.length > 0) {
     sendToLog(`[삼신상사] 새로운 URL 발견 ${newUrls.length}개`);
