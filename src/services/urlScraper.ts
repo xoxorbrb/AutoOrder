@@ -65,7 +65,16 @@ export async function ssScrapeNewUrls(
           const linkElement = tds[0]?.querySelector("a"); // 첫 번째 td에서 a 태그 찾기 (url)
           const dateText =
             tds[1]?.querySelectorAll("div")[1]?.textContent?.trim() || ""; // 두 번째 td의 첫 div 찾기 (시간)
-          if (linkElement && dateText) {
+          const isChecked =
+            tds[8]
+              ?.querySelector("table")
+              ?.querySelector("tbody")
+              ?.querySelector("tr")
+              ?.querySelectorAll("td")[4]
+              ?.querySelectorAll("div")[1]
+              ?.textContent?.trim() === "미확인";
+
+          if (linkElement && dateText && isChecked) {
             const rowDate = parseCustomDateTime(dateText, "ss");
             if (rowDate >= start && rowDate <= end) {
               urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
