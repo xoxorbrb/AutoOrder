@@ -52,6 +52,27 @@ export async function ssSendInput(
     selectCount = `0${count.toString()}`;
   }
 
+  let deliveryDate = data.desiredDeliveryDate;
+
+  if (deliveryDate !== "즉시배송") {
+    const [datePart, timePart] = deliveryDate.split(" ");
+    const [year, month, day] = datePart.split(".");
+    const [hour, minute] = timePart.split(":");
+
+    //연도
+    await page.select('select[name="ryear"]', year);
+    //월
+    await page.select('select[name="rmonth"]', month);
+    //일
+    await page.select('select[name="rday"]', day);
+    //시간
+    await page.select('select[name="rhour"]', hour);
+    //분
+    await page.select('select[name="rminute"]', minute);
+  }
+  //예식 선택
+  await page.select('select[name="rtime"]', "예식");
+
   //수량
   await page.select('select[data-select2-id="pcnt"]', selectCount);
 
@@ -103,9 +124,10 @@ export async function ssSendInput(
   sendToLog("받는분 전화: " + data.telephone);
   sendToLog("받는분 휴대폰: " + data.phone);
   sendToLog("요청사항: " + data.request);
+  sendToLog("희망배송일: " + data.desiredDeliveryDate);
   sendToLog("======================================");
 
-  await clickShowOrderButton(page, rnmBrowser);
+  // await clickShowOrderButton(page, rnmBrowser);
 }
 
 export async function roseSendInput(
@@ -155,7 +177,8 @@ export async function roseSendInput(
   if (count < 10) {
     selectCount = `0${count.toString()}`;
   }
-
+  //예식 선택
+  await page.select('select[name="rtime"]', "예식");
   //수량
   await page.select('select[data-select2-id="pcnt"]', selectCount);
 
@@ -204,7 +227,7 @@ export async function roseSendInput(
       resolve(); // Promise 해결
     }, 1000); // 1초 대기
   });
-  await clickShowOrderButton(page, rnmBrowser);
+  // await clickShowOrderButton(page, rnmBrowser);
 }
 
 function setSelectFlower(flowerName: string): string {
