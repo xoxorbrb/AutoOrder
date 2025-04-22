@@ -50,10 +50,8 @@ export async function ssScrapeNewUrls(
 
           return new Date(fullYear, month - 1, day, hour, minute);
         }
-        console.log("여기들어옴?");
         const start = parseCustomDateTime(startDate);
         const end = parseCustomDateTime(stopDate);
-        console.log("여기들어옴?111");
         rows.forEach((row) => {
           const computedStyle = window.getComputedStyle(row);
           if (
@@ -69,9 +67,6 @@ export async function ssScrapeNewUrls(
             tds[1]?.querySelectorAll("div")[1]?.textContent?.trim() || ""; // 두 번째 td의 첫 div 찾기 (시간)
           if (linkElement && dateText) {
             const rowDate = parseCustomDateTime(dateText, "ss");
-            console.log("희망배송일: " + rowDate);
-            console.log("시작일:  " + start);
-            console.log("종료일: " + end);
             if (rowDate >= start && rowDate <= end) {
               urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
             }
@@ -84,7 +79,7 @@ export async function ssScrapeNewUrls(
       stopDate
     );
     allUrls.push(...urls);
-    console.log("allUrls: " + allUrls);
+
     const isDisabled = await page
       .$eval("li.page-item.next", (el) => el.classList.contains("disabled"))
       .catch(() => true); //버튼 없는 경우도 종료
@@ -92,14 +87,11 @@ export async function ssScrapeNewUrls(
     if (isDisabled) {
       break;
     }
-    await Promise.all([
-      page.click("li.page-item.next > a"),
-      page.waitForNavigation({ waitUntil: "load" }),
-    ]);
+    await Promise.all([page.click("li.page-item.next > a")]);
   }
-
+  console.log("allUrls: " + allUrls);
   const newUrls = allUrls.filter((url) => !ssScrapedUrls.has(url)) as string[]; // 이전에 데이터를 얻어온 url을 제외한 url가져오기
-
+  console.log("newUrls: " + newUrls);
   if (newUrls.length > 0) {
     sendToLog(`[삼신상사] 새로운 URL 발견 ${newUrls.length}개`);
     newUrls.forEach((url) => {
