@@ -20,7 +20,8 @@ let ssRnmId = "";
 let ssRnmPw = "";
 let roseRnmId = "";
 let roseRnmPw = "";
-let date = "";
+let startDate = "";
+let stopDate = "";
 
 let mainWindow: BrowserWindow;
 export async function scrapeAndAutoInput(data: any) {
@@ -64,7 +65,8 @@ export async function scrapeAndAutoInput(data: any) {
   ssRnmPw = data.ssRnm.pw;
   roseRnmId = data.roseRnm.id;
   roseRnmPw = data.roseRnm.pw;
-  date = data.date + " " + data.time;
+  startDate = data.startDate + " " + "00:00";
+  stopDate = data.stopDate + " " + "23:59";
 
   const run = async () => {
     if (!isRunning) {
@@ -75,7 +77,7 @@ export async function scrapeAndAutoInput(data: any) {
     const mainWindow = BrowserWindow.getAllWindows()[0];
     setMainWindow(mainWindow);
 
-    sendToLog(now.toString() + " 로직 실행");
+    sendToLog(now.toString() + " 실행");
 
     await autoLogin.sessionCheckAndSetLogin(
       rosePage,
@@ -85,7 +87,11 @@ export async function scrapeAndAutoInput(data: any) {
       roseKey
     );
     await rosePage.reload({ waitUntil: "load" });
-    const roseNewUrls: string[] = await scrapUrls.roseScrapedNewUrls(rosePage);
+    const roseNewUrls: string[] = await scrapUrls.roseScrapedNewUrls(
+      rosePage,
+      startDate,
+      stopDate
+    );
 
     await autoLogin.sessionCheckAndSetLogin(
       rnmPage,
@@ -107,7 +113,11 @@ export async function scrapeAndAutoInput(data: any) {
      * 2. 플라워 url 가져오기 -> 데이터 스크랩 -> rnm 플라워 발주아이디로 로그인 -> 발주 데이터 입력 -> 플라워 발주아이디 로그아웃
      */
 
-    const ssNewUrls: string[] = await scrapUrls.ssScrapeNewUrls(ssPage, date);
+    const ssNewUrls: string[] = await scrapUrls.ssScrapeNewUrls(
+      ssPage,
+      startDate,
+      stopDate
+    );
     // rnm 아이디 로그인 (삼신 발주 아이디로 해야됨)
     await autoLogin.sessionCheckAndSetLogin(
       rnmPage,

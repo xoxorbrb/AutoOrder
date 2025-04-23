@@ -114,53 +114,128 @@ export async function ssScrapeNewUrls(
   }
 }
 
-export async function roseScrapedNewUrls(page: Page): Promise<string[]> {
+export async function roseScrapedNewUrls(
+  page: Page,
+  startDate: string,
+  stopDate: string
+): Promise<string[]> {
   sendToLog("[플라워 인트라넷] 미확인 수주 목록 스크랩");
+  sendToLog("[플라워 인트라넷] 희망배송일: " + startDate + " 이후 정보 스크랩");
+  sendToLog("[플라워 인트라넷] 희망배송일: " + stopDate + " 이전 정보 스크랩");
+  console.log("startDate: " + startDate);
 
-  await page.waitForSelector("tr");
+  const allUrls = [];
+  const [datePart, timePart] = startDate.split(" ");
+  let [year, month, day]: [number, number, number] = [0, 0, 0];
 
-  await new Promise<void>((resolve) => {
-    setTimeout(() => {
-      resolve(); // Promise 해결
-    }, 1000); // 1초 대기
-  });
+  [year, month, day] = datePart.split("-").map(Number);
 
-  await page.waitForSelector("select[name=bstatus]");
+  let syear: string = `${year}${month.toString().padStart(2, "0")}`;
+  console.log(syear);
+  // await page.waitForSelector('select[name="bstatus"]');
 
   page.on("console", (msg) => sendToLog("[플라워 인트라넷] " + msg.text()));
-  const urls: string[] = await page.$$eval(
-    "tr",
-    (rows, baseUrl) => {
-      const urls: string[] = [];
-      rows.forEach((row) => {
-        const tds = Array.from(row.querySelectorAll("td"));
-        const linkElement = tds[0]?.querySelector("a"); // 첫 번째 td에서 a 태그 찾기 (url)
-        const select = row.querySelector(
-          "select[name='bstatus']"
-        ) as HTMLSelectElement | null;
-        const isNotConfirmed = select?.value === "1";
-        if (linkElement && isNotConfirmed) {
-          // console.log("url: " + new URL(linkElement.href, baseUrl).href);
-          // urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
-          // console.log("urls: " + urls);
-          const link: string =
-            linkElement
-              .getAttribute("onclick")
-              ?.match(/window\.open\(['"]([^'"]+)['"]/)?.[1] || "";
-          const href: string = baseUrl + link;
-          console.log(href);
-          if (link) {
-            urls.push(href);
-          }
-        }
-      });
-      return urls;
-    },
-    "http://16441644.roseweb.co.kr"
-  );
+  let index = 1;
+  while (true) {
+    let sujuUrl = `http://16441644.roseweb.co.kr/list/suju_ajaxc.htm?syear=${syear}&sortname=bdate&sort=desc&keyset=&searchword=&keyset2=&sdate=&edate=&page=${index}&mode=`;
+    await page.goto(sujuUrl);
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve(); // Promise 해결
+      }, 1000); // 1초 대기
+    });
 
-  sendToLog(`[플라워 인트라넷] 미확인 URL ${urls.length}개`);
-  const newUrls = urls.filter((url) => !roseScrapedUrls.has(url)) as string[];
+    const { urls, isLastPage } = await page.$$eval(
+      "tr",
+      (rows, baseUrl, startDate, stopDate) => {
+        function parseCustomDateTime(
+          dateTimeStr: string,
+          type: string = "basic"
+        ): Date {
+          const [datePart, timePart] = dateTimeStr.split(" ");
+          let [year, month, day]: [number, number, number] = [0, 0, 0];
+          if (type === "ss") {
+            [year, month, day] = datePart.split(".").map(Number);
+          } else {
+            [year, month, day] = datePart.split("-").map(Number);
+          }
+
+          const [hour, minute] = timePart.split(":").map(Number);
+
+          // 연도를 2000년대 기준으로 변환 (예: "25" → 2025년)
+          const fullYear = year < 100 ? 2000 + year : year;
+
+          return new Date(fullYear, month - 1, day, hour, minute);
+        }
+        let isLast = false;
+        const start = parseCustomDateTime(startDate);
+        const end = parseCustomDateTime(stopDate);
+        const urls: string[] = [];
+        rows.forEach((row) => {
+          const tds = Array.from(row.querySelectorAll("td"));
+          const linkElement = tds[0]?.querySelector("a"); // 첫 번째 td에서 a 태그 찾기 (url)
+
+          // 희망배송일
+          const rowDate = tds[3]?.textContent || "";
+          const matched = rowDate.match(/\d{2}-\d{2}-\d{2}/g);
+          let tempDate = "";
+          if (matched && matched.length > 1) {
+            tempDate = matched[1];
+          }
+          tempDate += " 00:00";
+          console.log(tempDate);
+
+          let hopeDate = parseCustomDateTime(tempDate);
+
+          const select = row.querySelector(
+            'select[name="bstatus"]'
+          ) as HTMLSelectElement | null;
+          const isNotConfirmed = select?.value === "1";
+          let isComplete = select?.value === "4"; //배송완료 확인
+          if (isComplete) {
+            isLast = true;
+          }
+          console.log("hopeDate: " + hopeDate);
+          if (
+            linkElement &&
+            isNotConfirmed &&
+            start <= hopeDate &&
+            end >= hopeDate
+          ) {
+            // console.log("url: " + new URL(linkElement.href, baseUrl).href);
+            // urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
+            // console.log("urls: " + urls);
+            const link: string =
+              linkElement
+                .getAttribute("onclick")
+                ?.match(/window\.open\(['"]([^'"]+)['"]/)?.[1] || "";
+            const href: string = baseUrl + link;
+            console.log(href);
+            if (link) {
+              urls.push(href);
+            }
+          }
+        });
+        return { urls, isLastPage: isLast };
+      },
+      "http://16441644.roseweb.co.kr/list/",
+      startDate,
+      stopDate
+    );
+    allUrls.push(...urls);
+    index += 1;
+
+    if (isLastPage) {
+      console.log(
+        "배송완료가 있으므로 마지막 페이지로 확인되어 url 스크랩을 종료합니다. (다음페이지에도 미확인 건들 존재할 경우 관리자에게 문의해주세요.)"
+      );
+      break;
+    }
+  }
+  sendToLog(`[플라워 인트라넷] 미확인 URL ${allUrls.length}개`);
+  const newUrls = allUrls.filter(
+    (url) => !roseScrapedUrls.has(url)
+  ) as string[];
 
   if (newUrls && newUrls.length > 0) {
     sendToLog(`[플라워 인트라넷] 새로운 URL 발견: ${newUrls.length}개`);
