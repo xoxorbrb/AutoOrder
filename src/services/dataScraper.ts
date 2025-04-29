@@ -13,6 +13,10 @@ const roseKeyMapping = {
   flowerName: "상품정보",
   senderName: "보내는분",
   request: "요청사항",
+  byear: "년",
+  bmonth: "월",
+  bday: "일",
+  btime: "시간",
 };
 
 // export interface OrderData {
@@ -167,6 +171,10 @@ export async function roseOrderDataScraper(
     su: "수량",
     ribon_card: "보내는분",
     o_demand: "요청사항",
+    byear: "년",
+    bmonth: "월",
+    bday: "일",
+    btime: "시간",
   };
 
   for (const key of Object.keys(keyName)) {

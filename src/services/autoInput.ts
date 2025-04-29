@@ -177,6 +177,16 @@ export async function roseSendInput(
   if (count < 10) {
     selectCount = `0${count.toString()}`;
   }
+
+  //연도
+  await page.select('select[name="ryear"]', data.byear);
+  //월
+  await page.select('select[name="rmonth"]', data.bmonth);
+  //일
+  await page.select('select[name="rday"]', data.bday);
+  //시간
+  await page.select('input[name="rtime2"]', data.btime);
+
   //예식 선택
   await page.select('select[name="rtime"]', "예식");
   //수량

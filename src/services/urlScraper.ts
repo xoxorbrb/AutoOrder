@@ -183,7 +183,6 @@ export async function roseScrapedNewUrls(
             tempDate = matched[1];
           }
           tempDate += " 00:00";
-          console.log(tempDate);
 
           let hopeDate = parseCustomDateTime(tempDate);
 
@@ -195,7 +194,6 @@ export async function roseScrapedNewUrls(
           if (isComplete) {
             isLast = true;
           }
-          console.log("hopeDate: " + hopeDate);
           if (
             linkElement &&
             isNotConfirmed &&
@@ -226,7 +224,7 @@ export async function roseScrapedNewUrls(
     index += 1;
 
     if (isLastPage) {
-      console.log(
+      sendToLog(
         "배송완료가 있으므로 마지막 페이지로 확인되어 url 스크랩을 종료합니다. (다음페이지에도 미확인 건들 존재할 경우 관리자에게 문의해주세요.)"
       );
       break;
