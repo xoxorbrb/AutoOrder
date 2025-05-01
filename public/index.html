@@ -98,9 +98,9 @@
   <body>
     <!-- 첫 번째 페이지: 입력 폼 -->
     <div class="form-container" id="formPage">
-      <h1>AutoOrder 입력</h1>
+      <h1>AutoOrder</h1>
 
-      <div class="input-group">
+      <!-- <div class="input-group">
         <label>삼신상사</label>
         <div class="input-row">
           <input type="text" id="ssId" placeholder="아이디" />
@@ -115,34 +115,38 @@
           <input type="text" id="rosePw" placeholder="비밀번호" />
           <input type="text" id="roseKey" placeholder="키" />
         </div>
-      </div>
+      </div> -->
 
-      <div class="input-group">
+      <!-- <div class="input-group">
         <label>삼신상사 발주 아이디(RNM)</label>
         <div class="input-row">
           <input type="text" id="ssRnmId" placeholder="아이디" />
           <input type="text" id="ssRnmPw" placeholder="비밀번호" />
         </div>
-      </div>
+      </div> -->
 
-      <div class="input-group">
+      <!-- <div class="input-group">
         <label>1644 발주 아이디(RNM)</label>
         <div class="input-row">
           <input type="text" id="roseRnmId" placeholder="아이디" />
           <input type="text" id="roseRnmPw" placeholder="비밀번호" />
         </div>
-      </div>
+      </div> -->
       <div class="date-time-group">
-        <label>날짜 선택</label>
+        <label>시작 날짜 선택</label>
         <input type="date" id="dateInput" class="date-input" />
       </div>
-
       <div class="date-time-group">
-        <label>시간 선택</label>
-        <input type="time" id="timeInput" class="time-input" />
+        <label>종료 날짜 선택</label>
+        <input type="date" id="stopDate" class="date-input" />
       </div>
 
-      <button id="submitButton">확인</button>
+      <!-- <div class="date-time-group">
+        <label>시간 선택</label>
+        <input type="time" id="timeInput" class="time-input" />
+      </div> -->
+
+      <button id="submitButton">실행</button>
     </div>
 
     <!-- 두 번째 페이지: 진행 중 화면 -->

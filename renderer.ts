@@ -37,7 +37,8 @@ document.getElementById("submitButton")?.addEventListener("click", () => {
       id: "rnm1",
       pw: "a2542",
     },
-    // date: (document.getElementById("dateInput") as HTMLInputElement).value,
+    startDate: (document.getElementById("dateInput") as HTMLInputElement).value,
+    stopDate: (document.getElementById("stopDate") as HTMLInputElement).value,
     // time: (document.getElementById("timeInput") as HTMLInputElement).value,
   };
 

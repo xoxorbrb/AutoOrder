@@ -127,7 +127,7 @@ export async function ssSendInput(
   sendToLog("희망배송일: " + data.desiredDeliveryDate);
   sendToLog("======================================");
 
-  // await clickShowOrderButton(page, rnmBrowser);
+  await clickShowOrderButton(page, rnmBrowser);
 }
 
 export async function roseSendInput(
@@ -185,7 +185,7 @@ export async function roseSendInput(
   //일
   await page.select('select[name="rday"]', data.bday);
   //시간
-  await page.select('input[name="rtime2"]', data.btime);
+  await page.type('input[name="rtime2"]', data.btime);
 
   //예식 선택
   await page.select('select[name="rtime"]', "예식");
@@ -237,7 +237,7 @@ export async function roseSendInput(
       resolve(); // Promise 해결
     }, 1000); // 1초 대기
   });
-  // await clickShowOrderButton(page, rnmBrowser);
+  await clickShowOrderButton(page, rnmBrowser);
 }
 
 function setSelectFlower(flowerName: string): string {
