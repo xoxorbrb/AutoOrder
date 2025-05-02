@@ -24,6 +24,7 @@ let startDate = "";
 let stopDate = "";
 
 let mainWindow: BrowserWindow;
+const path = require("path");
 export async function scrapeAndAutoInput(data: any) {
   console.log("🚀 autoMain.ts 실행됨!", data);
   // const mainWindow = BrowserWindow.getAllWindows()[0];
@@ -32,9 +33,16 @@ export async function scrapeAndAutoInput(data: any) {
     return;
   }
 
+  const chromiumPath = path.join(
+    process.resourcesPath,
+    "chromium",
+    "chrome.exe"
+  );
+
   const ssBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    executablePath: chromiumPath,
   }); //samsin 브라우저
   const ssPages: Page[] = await ssBrowser.pages();
   const ssPage: Page = ssPages[0];
@@ -43,6 +51,7 @@ export async function scrapeAndAutoInput(data: any) {
   const rnmBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    executablePath: chromiumPath,
   });
   const rnmPages: Page[] = await rnmBrowser.pages();
   const rnmPage: Page = rnmPages[0];
@@ -51,6 +60,7 @@ export async function scrapeAndAutoInput(data: any) {
   const roseBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    executablePath: chromiumPath,
   }); //1644 브라우저
   const rosePages: Page[] = await roseBrowser.pages();
   const rosePage: Page = rosePages[0];

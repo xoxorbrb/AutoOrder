@@ -57,6 +57,15 @@
     "win": {
       "target": "nsis",
       "icon": "public/icon.ico"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "resources/chromium",
+        "to": "chromium",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
   }
 }
