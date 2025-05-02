@@ -12,12 +12,11 @@ app.whenReady().then(() => {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
       contextIsolation: true,
-      devTools: false,
+      // devTools: false,
     },
   });
 
   const prodURL = `file://${path.join(__dirname, "../dist/index.html")}`;
-
   mainWindow.loadURL(prodURL);
 
   mainWindow.on("closed", () => {
