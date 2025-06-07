@@ -8,7 +8,7 @@
     "build": "vite build && tsc",
     "electron": "electron .",
     "start": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && npm run electron\"",
-    "dist": "ELECTRON_BUILDER_DISABLE_CODE_SIGNING=true electron-builder"
+    "dist": "cross-env ELECTRON_BUILDER_DISABLE_CODE_SIGNING=true electron-builder"
   },
   "keywords": [],
   "author": "",
