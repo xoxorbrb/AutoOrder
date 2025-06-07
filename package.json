@@ -57,7 +57,8 @@
     "win": {
       "target": "nsis",
       "icon": "public/icon.ico",
-      "sign": false
+      "sign": false,
+      "publish": null
     },
     "extraResources": [
       {
