@@ -46,10 +46,10 @@ document.getElementById("submitButton")?.addEventListener("click", () => {
   logMessage("데이터 입력 완료, 처리 시작...");
   const today = new Date();
   const expireDate = new Date("2025-06-01T00:00:00");
-  if (today >= expireDate) {
-    logMessage("⛔ 관리자에게 문의 필요");
-    data.disable = "Y";
-  }
+  // if (today >= expireDate) {
+  //   logMessage("⛔ 관리자에게 문의 필요");
+  //   data.disable = "Y";
+  // }
   window.electronAPI.scrapeAndAutoInput(data);
   // 첫 번째 페이지 숨기고 진행 중 페이지 표시
   formPage.style.display = "none";

@@ -76,23 +76,36 @@ export async function ssSendInput(
   //수량
   await page.select('select[data-select2-id="pcnt"]', selectCount);
 
-  //원청금액, 보낼금액 1원으로 통일
+  //원청금액, 보낼금액
   await page.type('input[name="poldwon"]', data.price);
-  await page.type('input[name="pwon"]', data.price);
+
+  const rawPrice = data.price?.replace(/,/g, "");
+  let disCounted = Math.round(Number(rawPrice) * 0.97);
+  let pwon = disCounted.toLocaleString();
+  await page.type('input[name="pwon"]', pwon);
 
   //주소
   await page.type('input[name="raddr"]', data.deliveryAddress);
 
+  let rightText = data.rightText;
   //경조사어
-  let rightText = data.rightText
-    .map((val: string, index: number) => `${index + 1}. ${val}`)
-    .join(" ");
+  if (rightText.length > 1) {
+    rightText = rightText
+      .map((val: string, index: number) => `${index + 1}. ${val}`)
+      .join(" ");
+  }
+
   await page.type('input[name="rgyungjo_1"]', rightText);
 
+  let leftText = data.leftText;
+
   //보내실분 명의
-  let leftText = data.leftText
-    .map((val: string, index: number) => `${index + 1}. ${val}`)
-    .join(" ");
+  if (leftText.length > 0) {
+    leftText = data.leftText
+      .map((val: string, index: number) => `${index + 1}. ${val}`)
+      .join(" ");
+  }
+
   await page.type('input[name="rsend_1"]', leftText);
 
   // await page.type('input[name="sname"]', leftText);
@@ -108,8 +121,13 @@ export async function ssSendInput(
   //받는분 휴대폰
   await page.type('input[name="rphone"]', data.phone);
 
+  let request = data.request;
+
+  if (!request) {
+    request = "★현장사진★ 풍성하게 잘 부탁드립니다^^";
+  }
   //요구사항
-  await page.type('textarea[name="remark"]', data.request);
+  await page.type('textarea[name="remark"]', request);
 
   sendToLog("============데이터 입력 완료==============");
   sendToLog("상품명: " + selectFlower);
@@ -194,7 +212,10 @@ export async function roseSendInput(
 
   //원청금액, 보낼금액
   await page.type('input[name="poldwon"]', data.originPrice);
-  await page.type('input[name="pwon"]', data.gPrice);
+  const rawPrice = data.originPrice?.replace(/,/g, "");
+  let disCounted = Math.round(Number(rawPrice) * 0.95);
+  let pwon = disCounted.toLocaleString();
+  await page.type('input[name="pwon"]', pwon);
 
   //주소
   await page.type('input[name="raddr"]', data.arrivePlace);
@@ -215,8 +236,14 @@ export async function roseSendInput(
   //받는분 휴대폰
   await page.type('input[name="rphone"]', data.phone);
 
+  let request = data.request;
+
+  if (!request) {
+    request = "★현장사진★ 풍성하게 잘 부탁드립니다^^";
+  }
+
   //요청 사항
-  await page.type('textarea[name="remark"]', data.request);
+  await page.type('textarea[name="remark"]', request);
 
   sendToLog("============데이터 입력 완료==============");
   sendToLog("상품명: " + selectFlower);

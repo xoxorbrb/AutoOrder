@@ -1,9 +1,8 @@
 import { ElementHandle, type Page } from "puppeteer";
 import { sendToLog } from "../autoMain";
 // 이미 스크랩한 url 제외하기 위한 저장할 Set
-export const ssScrapedUrls = new Set<string>();
-export const roseScrapedUrls = new Set<string>();
 export async function ssScrapeNewUrls(
+  ssScrapedUrls: Set<string>,
   page: Page,
   startDate: string,
   stopDate: string
@@ -18,6 +17,106 @@ export async function ssScrapeNewUrls(
   });
   page.on("console", (msg) => sendToLog("[삼신상사] " + msg.text()));
   await page.waitForSelector("tr");
+
+  await page.click("button.btn.btn-success");
+
+  while (true) {
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve(); // Promise 해결
+      }, 1000); // 1초 대기
+    });
+    const { urls, shouldBreak }: { urls: string[]; shouldBreak: boolean } =
+      await page.$$eval(
+        "tr",
+        (rows, baseUrl, startDate, stopDate) => {
+          const urls: string[] = [];
+          function parseCustomDateTime(
+            dateTimeStr: string,
+            type: string = "basic"
+          ): Date {
+            const [datePart, timePart] = dateTimeStr.split(" ");
+            let [year, month, day]: [number, number, number] = [0, 0, 0];
+            if (type === "ss") {
+              [year, month, day] = datePart.split(".").map(Number);
+            } else {
+              [year, month, day] = datePart.split("-").map(Number);
+            }
+
+            const [hour, minute] = timePart.split(":").map(Number);
+
+            // 연도를 2000년대 기준으로 변환 (예: "25" → 2025년)
+            const fullYear = year < 100 ? 2000 + year : year;
+
+            return new Date(fullYear, month - 1, day, hour, minute);
+          }
+          const start = parseCustomDateTime(startDate);
+          const end = parseCustomDateTime(stopDate);
+          let shouldBreak = false;
+          rows.forEach((row) => {
+            const computedStyle = window.getComputedStyle(row);
+            if (
+              computedStyle.backgroundColor !== "rgb(227, 243, 246)" &&
+              computedStyle.backgroundColor !== "rgb(251, 241, 246)" &&
+              computedStyle.backgroundColor !== "rgb(138, 250, 175)"
+            ) {
+              return;
+            }
+            const tds = row.querySelectorAll("td");
+            const linkElement = tds[0]?.querySelector("a"); // 첫 번째 td에서 a 태그 찾기 (url)
+            const dateText =
+              tds[1]?.querySelectorAll("div")[1]?.textContent?.trim() || ""; // 두 번째 td의 첫 div 찾기 (시간)
+            const isChecked =
+              tds[8]
+                ?.querySelector("table")
+                ?.querySelector("tbody")
+                ?.querySelector("tr")
+                ?.querySelectorAll("td")[4]
+                ?.querySelectorAll("div")[1]
+                ?.textContent?.trim() === "미확인";
+
+            if (linkElement && dateText && isChecked) {
+              const rowDate = parseCustomDateTime(dateText, "ss");
+              console.log(
+                tds[8]
+                  ?.querySelector("table")
+                  ?.querySelector("tbody")
+                  ?.querySelector("tr")
+                  ?.querySelectorAll("td")[4]
+                  ?.querySelectorAll("div")[1]
+                  ?.textContent?.trim()
+              );
+              console.log("rowDate: " + rowDate);
+              if (rowDate >= start && rowDate <= end) {
+                urls.push(new URL(linkElement.href, baseUrl).href); // URL 절대경로로 변환
+              } else {
+                console.log(
+                  "[삼신상사] 희망배송일이 오늘이 아님으로, 다음페이지로 넘어가지 않습니다."
+                );
+                shouldBreak = true;
+                //
+              }
+            }
+          });
+          return { urls, shouldBreak };
+        },
+        page.url(),
+        startDate,
+        stopDate
+      );
+    allUrls.push(...urls);
+    const isDisabled = await page
+      .$eval("li.page-item.next", (el) => el.classList.contains("disabled"))
+      .catch(() => true); //버튼 없는 경우도 종료
+    if (shouldBreak || isDisabled) {
+      break;
+    }
+    await Promise.all([page.click("li.page-item.next > a")]);
+  }
+
+  const todayNewUrls = allUrls.filter(
+    (url) => !ssScrapedUrls.has(url)
+  ) as string[]; // 이전에 데이터를 얻어온 url을 제외한 url가져오기
 
   await page.click("button.btn.btn-info");
 
@@ -98,8 +197,11 @@ export async function ssScrapeNewUrls(
     }
     await Promise.all([page.click("li.page-item.next > a")]);
   }
-  console.log("allUrls: " + allUrls);
-  const newUrls = allUrls.filter((url) => !ssScrapedUrls.has(url)) as string[]; // 이전에 데이터를 얻어온 url을 제외한 url가져오기
+  const afterNewUrls = allUrls.filter(
+    (url) => !ssScrapedUrls.has(url)
+  ) as string[]; // 이전에 데이터를 얻어온 url을 제외한 url가져오기
+  const newUrls = [...todayNewUrls, ...afterNewUrls];
+
   console.log("newUrls: " + newUrls);
   if (newUrls.length > 0) {
     sendToLog(`[삼신상사] 새로운 URL 발견 ${newUrls.length}개`);
@@ -115,6 +217,7 @@ export async function ssScrapeNewUrls(
 }
 
 export async function roseScrapedNewUrls(
+  roseScrapedUrls: Set<string>,
   page: Page,
   startDate: string,
   stopDate: string

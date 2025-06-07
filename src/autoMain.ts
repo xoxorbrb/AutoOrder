@@ -7,7 +7,8 @@ import * as autoInput from "./services/autoInput";
 
 // 스크랩 루프 상태 관리 플래그
 let isRunning: boolean = true;
-
+const ssScrapedUrls = new Set<string>();
+const roseScrapedUrls = new Set<string>();
 const ssBasicUrl = "https://samsincall.com/partners/orders/";
 const roseBasicUrl = "http://16441644.roseweb.co.kr/index.htm";
 const rnmBasicUrl = "http://16005423.co.kr/agent/";
@@ -24,7 +25,7 @@ let startDate = "";
 let stopDate = "";
 
 let mainWindow: BrowserWindow;
-const path = require("path");
+const path = require("path"); //배포시
 export async function scrapeAndAutoInput(data: any) {
   console.log("🚀 autoMain.ts 실행됨!", data);
   // const mainWindow = BrowserWindow.getAllWindows()[0];
@@ -34,6 +35,7 @@ export async function scrapeAndAutoInput(data: any) {
   }
 
   const chromiumPath = path.join(
+    //배포시
     process.resourcesPath,
     "chromium",
     "chrome.exe"
@@ -42,7 +44,7 @@ export async function scrapeAndAutoInput(data: any) {
   const ssBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    executablePath: chromiumPath,
+    executablePath: chromiumPath, //배포시
   }); //samsin 브라우저
   const ssPages: Page[] = await ssBrowser.pages();
   const ssPage: Page = ssPages[0];
@@ -51,7 +53,7 @@ export async function scrapeAndAutoInput(data: any) {
   const rnmBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    executablePath: chromiumPath,
+    executablePath: chromiumPath, // 배포시
   });
   const rnmPages: Page[] = await rnmBrowser.pages();
   const rnmPage: Page = rnmPages[0];
@@ -60,7 +62,7 @@ export async function scrapeAndAutoInput(data: any) {
   const roseBrowser: Browser = await puppeteer.launch({
     headless: false, // GUI 실행 (숨김 모드: true)
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    executablePath: chromiumPath,
+    executablePath: chromiumPath, //배포시
   }); //1644 브라우저
   const rosePages: Page[] = await roseBrowser.pages();
   const rosePage: Page = rosePages[0];
@@ -98,6 +100,7 @@ export async function scrapeAndAutoInput(data: any) {
     );
     await rosePage.reload({ waitUntil: "load" });
     const roseNewUrls: string[] = await scrapUrls.roseScrapedNewUrls(
+      roseScrapedUrls,
       rosePage,
       startDate,
       stopDate
@@ -124,6 +127,7 @@ export async function scrapeAndAutoInput(data: any) {
      */
 
     const ssNewUrls: string[] = await scrapUrls.ssScrapeNewUrls(
+      ssScrapedUrls,
       ssPage,
       startDate,
       stopDate
