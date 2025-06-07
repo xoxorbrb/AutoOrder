@@ -8,7 +8,7 @@
     "build": "vite build && tsc",
     "electron": "electron .",
     "start": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && npm run electron\"",
-    "dist": "cross-env ELECTRON_BUILDER_DISABLE_CODE_SIGNING=true electron-builder"
+    "dist": "electron-builder"
   },
   "keywords": [],
   "author": "",
@@ -56,8 +56,7 @@
     },
     "win": {
       "target": "nsis",
-      "icon": "public/icon.ico",
-      "sign": false
+      "icon": "public/icon.ico"
     },
     "extraResources": [
       {
