@@ -211,8 +211,8 @@ export async function roseSendInput(
   await page.select('select[data-select2-id="pcnt"]', selectCount);
 
   //원청금액, 보낼금액
-  await page.type('input[name="poldwon"]', data.originPrice);
-  const rawPrice = data.originPrice?.replace(/,/g, "");
+  await page.type('input[name="poldwon"]', data.fPrice);
+  const rawPrice = data.fPrice?.replace(/,/g, "");
   let disCounted = Math.round(Number(rawPrice) * 0.95);
   let pwon = disCounted.toLocaleString();
   await page.type('input[name="pwon"]', pwon);
@@ -248,7 +248,7 @@ export async function roseSendInput(
   sendToLog("============데이터 입력 완료==============");
   sendToLog("상품명: " + selectFlower);
   sendToLog("수량: " + selectCount);
-  sendToLog("원청금액: " + data.originPrice);
+  sendToLog("원청금액: " + data.fPrice);
   sendToLog("보낼금액: " + data.gPrice);
   sendToLog("주소: " + data.arrivePlace);
   sendToLog("경조사어: " + data.message);
