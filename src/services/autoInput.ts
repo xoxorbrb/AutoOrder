@@ -100,7 +100,7 @@ export async function ssSendInput(
   let leftText = data.leftText;
 
   //보내실분 명의
-  if (leftText.length > 0) {
+  if (leftText.length > 1) {
     leftText = data.leftText
       .map((val: string, index: number) => `${index + 1}. ${val}`)
       .join(" ");
