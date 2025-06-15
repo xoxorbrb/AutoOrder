@@ -200,7 +200,7 @@ export async function ssScrapeNewUrls(
   const afterNewUrls = allUrls.filter(
     (url) => !ssScrapedUrls.has(url)
   ) as string[]; // 이전에 데이터를 얻어온 url을 제외한 url가져오기
-  const newUrls = [...todayNewUrls, ...afterNewUrls];
+  const newUrls = [...new Set([...todayNewUrls, ...afterNewUrls])];
 
   console.log("newUrls: " + newUrls);
   if (newUrls.length > 0) {
