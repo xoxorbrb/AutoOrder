@@ -1,7 +1,7 @@
 {
   "name": "auto-order",
   "productName": "Auto Order",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "main": "dist/electron.js",
   "scripts": {
     "dev": "vite",
