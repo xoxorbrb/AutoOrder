@@ -25,6 +25,7 @@ let startDate = "";
 let stopDate = "";
 
 let mainWindow: BrowserWindow;
+let interval: NodeJS.Timeout | null = null;
 const path = require("path"); //배포시
 export async function scrapeAndAutoInput(data: any) {
   console.log("🚀 autoMain.ts 실행됨!", data);
@@ -84,76 +85,86 @@ export async function scrapeAndAutoInput(data: any) {
     if (!isRunning) {
       return;
     }
+    try {
+      let now = new Date();
+      const mainWindow = BrowserWindow.getAllWindows()[0];
+      setMainWindow(mainWindow);
 
-    let now = new Date();
-    const mainWindow = BrowserWindow.getAllWindows()[0];
-    setMainWindow(mainWindow);
+      sendToLog(now.toString() + " 실행");
 
-    sendToLog(now.toString() + " 실행");
+      await autoLogin.sessionCheckAndSetLogin(
+        rosePage,
+        roseBasicUrl,
+        roseId,
+        rosePw,
+        roseKey
+      );
+      await rosePage.reload({ waitUntil: "load" });
+      const roseNewUrls: string[] = await scrapUrls.roseScrapedNewUrls(
+        roseScrapedUrls,
+        rosePage,
+        startDate,
+        stopDate
+      );
 
-    await autoLogin.sessionCheckAndSetLogin(
-      rosePage,
-      roseBasicUrl,
-      roseId,
-      rosePw,
-      roseKey
-    );
-    await rosePage.reload({ waitUntil: "load" });
-    const roseNewUrls: string[] = await scrapUrls.roseScrapedNewUrls(
-      roseScrapedUrls,
-      rosePage,
-      startDate,
-      stopDate
-    );
+      await autoLogin.sessionCheckAndSetLogin(
+        rnmPage,
+        rnmBasicUrl,
+        roseRnmId,
+        roseRnmPw
+      );
 
-    await autoLogin.sessionCheckAndSetLogin(
-      rnmPage,
-      rnmBasicUrl,
-      roseRnmId,
-      roseRnmPw
-    );
+      for (const roseUrl of roseNewUrls) {
+        let data = await scrapData.roseOrderDataScraper(roseUrl, roseBrowser);
+        await autoInput.roseSendInput(data, rnmPage, rnmBrowser);
+      }
+      await autoLogin.logoutRNM(rnmPage);
 
-    for (const roseUrl of roseNewUrls) {
-      let data = await scrapData.roseOrderDataScraper(roseUrl, roseBrowser);
-      await autoInput.roseSendInput(data, rnmPage, rnmBrowser);
+      await autoLogin.sessionCheckAndSetLogin(ssPage, ssBasicUrl, ssId, ssPw); // 필요 시 로그아웃 이벤트 잡아서 바로 중지하는 거 개발 필요, 현재로서는 딱히 세션 끊는게 보이지 않아서 1분에 한번씩 체크하도록 되어있음
+
+      /**
+       * 1. 삼신 url 가져오기 -> 데이터 스크랩 -> rnm 삼신 발주아이디로 로그인 -> 발주 데이터 입력 -> 삼신 발주아이디 로그아웃
+       * 2. 플라워 url 가져오기 -> 데이터 스크랩 -> rnm 플라워 발주아이디로 로그인 -> 발주 데이터 입력 -> 플라워 발주아이디 로그아웃
+       */
+
+      const ssNewUrls: string[] = await scrapUrls.ssScrapeNewUrls(
+        ssScrapedUrls,
+        ssPage,
+        startDate,
+        stopDate
+      );
+      // rnm 아이디 로그인 (삼신 발주 아이디로 해야됨)
+      await autoLogin.sessionCheckAndSetLogin(
+        rnmPage,
+        rnmBasicUrl,
+        ssRnmId,
+        ssRnmPw
+      );
+
+      for (const ssUrl of ssNewUrls) {
+        let data = await scrapData.ssOrderDataScraper(ssUrl, ssBrowser);
+        await autoInput.ssSendInput(data, rnmPage, rnmBrowser);
+      }
+      await autoLogin.logoutRNM(
+        rnmPage //로그아웃 url
+      );
+
+      sendToLog(". . . 완료 후 기다리는중 . . .");
+    } catch (error) {
+      sendToLog("❌ 오류가 발생하였습니다. 종료 후 재실행 필요합니다.");
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          mainWindow?.webContents.send("error-sound");
+        }, i * 500); // 0.5초 간격
+      }
+
+      if (interval) clearInterval(interval);
     }
-    await autoLogin.logoutRNM(rnmPage);
-
-    await autoLogin.sessionCheckAndSetLogin(ssPage, ssBasicUrl, ssId, ssPw); // 필요 시 로그아웃 이벤트 잡아서 바로 중지하는 거 개발 필요, 현재로서는 딱히 세션 끊는게 보이지 않아서 1분에 한번씩 체크하도록 되어있음
-
-    /**
-     * 1. 삼신 url 가져오기 -> 데이터 스크랩 -> rnm 삼신 발주아이디로 로그인 -> 발주 데이터 입력 -> 삼신 발주아이디 로그아웃
-     * 2. 플라워 url 가져오기 -> 데이터 스크랩 -> rnm 플라워 발주아이디로 로그인 -> 발주 데이터 입력 -> 플라워 발주아이디 로그아웃
-     */
-
-    const ssNewUrls: string[] = await scrapUrls.ssScrapeNewUrls(
-      ssScrapedUrls,
-      ssPage,
-      startDate,
-      stopDate
-    );
-    // rnm 아이디 로그인 (삼신 발주 아이디로 해야됨)
-    await autoLogin.sessionCheckAndSetLogin(
-      rnmPage,
-      rnmBasicUrl,
-      ssRnmId,
-      ssRnmPw
-    );
-
-    for (const ssUrl of ssNewUrls) {
-      let data = await scrapData.ssOrderDataScraper(ssUrl, ssBrowser);
-      await autoInput.ssSendInput(data, rnmPage, rnmBrowser);
-    }
-    await autoLogin.logoutRNM(
-      rnmPage //로그아웃 url
-    );
-
-    sendToLog(". . . 완료 후 기다리는중 . . .");
   };
 
   await run();
 
-  const interval = setInterval(run, 60000);
+  interval = setInterval(run, 60000);
 }
 
 export function stopScrapping() {

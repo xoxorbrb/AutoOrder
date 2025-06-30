@@ -62,6 +62,14 @@ document.getElementById("exitButton")?.addEventListener("click", () => {
 window.electronAPI.receiveLogMessage((message) => {
   logMessage(message);
 });
+window.electronAPI?.onErrorSound(() => {
+  console.log("error-sound 수신됨");
+
+  const audio = new Audio("sounds/error.mp3");
+  audio.play().catch(() => {
+    console.log("소리 재생 실패");
+  });
+});
 //로그 출력
 function logMessage(message: string) {
   const logEntry = document.createElement("div");

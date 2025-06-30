@@ -11,4 +11,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   scrapeAndAutoInput: (data: any) =>
     ipcRenderer.send("scrape-and-auto-input", data),
   stopScrapping: () => ipcRenderer.send("stop-scrapping"),
+  onErrorSound: (callback: () => void) => {
+    ipcRenderer.on("error-sound", callback);
+  },
 });

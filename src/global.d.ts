@@ -11,6 +11,7 @@ declare global {
       receiveLogMessage: (
         callback: (event: any, message: string) => void
       ) => void;
+      onErrorSound: (callback: () => void) => void;
     };
   }
 }
