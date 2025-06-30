@@ -58,17 +58,31 @@ export async function ssSendInput(
     const [datePart, timePart] = deliveryDate.split(" ");
     const [year, month, day] = datePart.split(".");
     const [hour, minute] = timePart.split(":");
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    const currentDay = today.getDate();
 
-    //연도
-    await page.select('select[name="ryear"]', year);
-    //월
-    await page.select('select[name="rmonth"]', month);
-    //일
-    await page.select('select[name="rday"]', day);
-    //시간
-    await page.select('select[name="rhour"]', hour);
-    //분
-    await page.select('select[name="rminute"]', minute);
+    const current = Number(
+      String(currentYear) +
+        String(currentMonth).padStart(2, "0") +
+        String(currentDay).padStart(2, "0")
+    );
+
+    const toDay = Number(year + month.padStart(2, "0") + day.padStart(2, "0"));
+
+    if (current <= toDay) {
+      //연도
+      await page.select('select[name="ryear"]', year);
+      //월
+      await page.select('select[name="rmonth"]', month);
+      //일
+      await page.select('select[name="rday"]', day);
+      //시간
+      await page.select('select[name="rhour"]', hour);
+      //분
+      await page.select('select[name="rminute"]', minute);
+    }
   }
   //예식 선택
   await page.select('select[name="rtime"]', "예식");
@@ -196,14 +210,28 @@ export async function roseSendInput(
     selectCount = `0${count.toString()}`;
   }
 
-  //연도
-  await page.select('select[name="ryear"]', data.byear);
-  //월
-  await page.select('select[name="rmonth"]', data.bmonth);
-  //일
-  await page.select('select[name="rday"]', data.bday);
-  //시간
-  await page.type('input[name="rtime2"]', data.btime);
+  const today = new Date();
+  const currentDate = Number(
+    String(today.getFullYear()) +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      String(today.getDate()).padStart(2, "0")
+  );
+  const { byear, bmonth, bday } = data;
+
+  const targetDate = Number(
+    byear + bmonth.padStart(2, "0") + bday.padStart(2, "0")
+  );
+
+  if (currentDate <= targetDate) {
+    //연도
+    await page.select('select[name="ryear"]', data.byear);
+    //월
+    await page.select('select[name="rmonth"]', data.bmonth);
+    //일
+    await page.select('select[name="rday"]', data.bday);
+    //시간
+    await page.type('input[name="rtime2"]', data.btime);
+  }
 
   //예식 선택
   await page.select('select[name="rtime"]', "예식");

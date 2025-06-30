@@ -159,12 +159,16 @@ export async function scrapeAndAutoInput(data: any) {
       }
 
       if (interval) clearInterval(interval);
+
+      throw error;
     }
   };
 
-  await run();
+  try {
+    await run();
 
-  interval = setInterval(run, 60000);
+    interval = setInterval(run, 60000);
+  } catch (err) {}
 }
 
 export function stopScrapping() {
